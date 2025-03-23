@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Biblioteca - Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="index.html" class="btn-library">Volver</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Logo Repositorio LP" class="logo">
+                <h1>Mi Biblioteca</h1>
+            </div>
+            <div class="login-button" id="login-button-container">
+                <!-- Contenido dinámico -->
+            </div>
+        </header>
+
+        <main>
+            <!-- Botón FIJO para agregar proyectos -->
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="add-project.html" class="btn-submit">Agregar Proyecto</a>
+            </div>
+        
+            <!-- Sección de proyectos -->
+            <section class="results" id="results"></section>
+        
+            <!-- Mensaje si no hay proyectos (opcional) -->
+            <div id="no-projects-message" style="display: none; text-align: center;">
+                <p>No hay proyectos en tu biblioteca.</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Repositorio LP</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const loggedInUser = checkLoggedInUser();
+        if (!loggedInUser) {
+            alert("🔒 Debes iniciar sesión.");
+            window.location.href = "login.html";
+        } else {
+            // Actualizar el header
+            document.getElementById("login-button-container").innerHTML = `
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name">${loggedInUser.name}</span>
+                    <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                </div>
+            `;
+    
+            // Cargar y mostrar proyectos
+            loadProjectsFromLocalStorage();
+            const userProjects = projects.filter(p => p.userEmail === loggedInUser.email);
+            
+            if (userProjects.length === 0) {
+                document.getElementById("no-projects-message").style.display = "block";
+            } else {
+                displayProjects(userProjects, true);
+            }
+        }
+    </script>
+</body>
+</html>

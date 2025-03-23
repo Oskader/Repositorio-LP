@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión - Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="index.html" class="btn-library">Volver</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Logo Repositorio LP" class="logo">
+                <h1>Repositorio LP</h1>
+            </div>
+            <div class="login-button">
+                <div style="width: 120px"></div>
+            </div>
+        </header>
+
+        <main>
+            <div class="login-container">
+                <section class="login-form">
+                    <h2>Inicia sesión</h2>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="email">Correo electrónico:</label>
+                            <input type="email" id="email" name="email" placeholder="Ingresa tu correo electrónico" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña:</label>
+                            <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                        </div>
+                        <button type="submit" class="btn-login">Iniciar sesión</button>
+                    </form>
+                    <p class="register-link">¿No tienes una cuenta? <a href="register.html">Regístrate aquí</a></p>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Repositorio LP</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById("login-form")?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            loginUser(email, password);
+        });
+    </script>
+</body>
+</html>

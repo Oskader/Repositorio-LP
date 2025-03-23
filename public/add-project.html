@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Proyecto - Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="index.html" class="btn-library">Volver</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Google Académico Logo" class="logo">
+                <h1>Agregar Proyecto</h1>
+            </div>
+            <div class="login-button">
+                <script>
+                    const loggedInUser = checkLoggedInUser();
+                    if (loggedInUser) {
+                        document.write(`
+                            <div class="user-info">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="user-name">${loggedInUser.name}</span>
+                                <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                            </div>
+                        `);
+                    } else {
+                        document.write('<a href="login.html" class="btn-login">Iniciar sesión</a>');
+                    }
+                </script>
+            </div>
+        </header>
+
+        <main>
+            <section class="add-project">
+                <h2>Agregar Proyecto</h2>
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="title">Título:</label>
+                        <input type="text" id="title" name="title" placeholder="Título del proyecto" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="authors">Autores:</label>
+                        <input type="text" id="authors" name="authors" placeholder="Nombres de autores" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="publication-date">Fecha de publicación:</label>
+                        <input type="date" id="publication-date" name="publication-date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="abstract">Resumen:</label>
+                        <textarea 
+                            id="abstract" 
+                            name="abstract" 
+                            rows="5"
+                            placeholder="Escribe un resumen del proyecto"
+                            required
+                        ></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pdf-file">Subir PDF:</label>
+                        <input type="file" id="pdf-file" name="pdf-file" accept="application/pdf" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Agregar Proyecto</button>
+                </form>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Repositorio LP</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById("project-form")?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById("title").value;
+            const authors = document.getElementById("authors").value;
+            const publicationDate = document.getElementById("publication-date").value;
+            const abstract = document.getElementById("abstract").value;
+            const pdfFile = document.getElementById("pdf-file").files[0]?.name || "default.pdf";
+    
+            if (!title || !authors || !publicationDate || !abstract) {
+                alert("❌ Completa todos los campos obligatorios");
+                return;
+            }
+    
+            addProject(title, authors, publicationDate, abstract, pdfFile);
+            e.target.reset();
+            alert("✅ Proyecto agregado correctamente");
+            window.location.href = "library.html"; 
+        });
+    </script>
+    </script>
+</body>
+</html>

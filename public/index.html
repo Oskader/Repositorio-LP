@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="library.html" class="btn-library">Mi biblioteca</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Google Académico Logo" class="logo">
+                <h1>Repositorio LP</h1>
+            </div>
+            <div class="login-button">
+                <script src="script.js"></script>
+                <script>
+                    const loggedInUser = checkLoggedInUser();
+                    if (loggedInUser) {
+                        document.write(`
+                            <div class="user-info">
+                                <i class="fas fa-user-circle"></i> <!-- Ícono de perfil -->
+                                <span class="user-name">${loggedInUser.name}</span>
+                                <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                            </div>
+                        `);
+                    } else {
+                        document.write('<a href="login.html" class="btn-login">Iniciar sesión</a>');
+                    }
+                </script>
+            </div>
+        </header>
+
+        <main>
+            <!-- Barra de búsqueda -->
+            <form id="search-form" class="search-form">
+                <input type="text" id="search-input" placeholder="Buscar artículos, libros, tesis..." class="search-input">
+                <button type="submit" class="search-button">Buscar</button>
+            </form>
+
+            <!-- Sección de resultados -->
+            <section class="results" id="results">
+                <!-- Aquí se mostrarán los proyectos dinámicamente -->
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Repositorio LP</p>
+        </footer>
+    </div>
+
+    <script>
+        // Cargar y mostrar proyectos al iniciar
+        document.addEventListener("DOMContentLoaded", () => {
+            loadProjectsFromLocalStorage(); // Cargar desde localStorage
+            displayProjects(projects, false); // Mostrar todos los proyectos sin acciones
+        });
+
+        // Búsqueda al enviar el formulario
+        document.getElementById("search-form").addEventListener("submit", (e) => {
+            e.preventDefault(); // Evitar que el formulario se envíe
+            const query = document.getElementById("search-input").value.toLowerCase();
+            const filtered = projects.filter(project => 
+                project.title.toLowerCase().includes(query) ||
+                project.authors.toLowerCase().includes(query)
+            );
+            displayProjects(filtered, false); // Mostrar resultados filtrados sin acciones
+        });
+    </script>
+</body>
+</html>

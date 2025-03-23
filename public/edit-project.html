@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Proyecto - Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="library.html" class="btn-library">Volver</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Logo" class="logo">
+                <h1>Editar Proyecto</h1>
+            </div>
+            <div class="login-button" id="login-button-container"></div>
+        </header>
+
+        <main>
+            <section class="edit-project">
+                <form id="edit-form">
+                    <div class="form-group">
+                        <label for="title">Título:</label>
+                        <input type="text" id="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="authors">Autores:</label>
+                        <input type="text" id="authors" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="publication-date">Fecha de publicación:</label>
+                        <input type="date" id="publication-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="abstract">Resumen:</label>
+                        <textarea id="abstract" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdf-file">Subir PDF:</label>
+                        <input type="file" id="pdf-file" accept="application/pdf">
+                        <p>Archivo actual: <span id="current-pdf"></span></p>
+                    </div>
+                    <button type="submit" class="btn-submit">Guardar Cambios</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Cargar proyectos desde localStorage
+        loadProjectsFromLocalStorage();
+
+        // Obtener el ID del proyecto desde la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = parseInt(urlParams.get('id'));
+
+        // Buscar el proyecto en la lista de proyectos
+        const project = projects.find(p => p.id === projectId);
+
+        // Pre-llenar el formulario con los datos del proyecto
+        if (project) {
+            document.getElementById('title').value = project.title;
+            document.getElementById('authors').value = project.authors;
+            document.getElementById('publication-date').value = project.publicationDate;
+            document.getElementById('abstract').value = project.abstract;
+            document.getElementById('current-pdf').textContent = project.pdfFile; // Mostrar el nombre del archivo actual
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('edit-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const updatedData = {
+                title: document.getElementById('title').value,
+                authors: document.getElementById('authors').value,
+                publicationDate: document.getElementById('publication-date').value,
+                abstract: document.getElementById('abstract').value,
+                pdfFile: document.getElementById('pdf-file').files[0]?.name || project.pdfFile
+            };
+
+            updateProject(projectId, updatedData);
+            alert("✅ Proyecto actualizado correctamente");
+            window.location.href = "library.html";
+        });
+    </script>
+</body>
+</html>
