@@ -115,18 +115,33 @@ function displayProjects(filteredProjects = projects, showActions = false) {
 }
 
 function openPDF(pdfUrl) {
-    if (pdfUrl) {
-        // Reemplaza '/image/upload' por '/raw/upload' en la URL si existe
-        const downloadUrl = pdfUrl.replace('/image/upload', '/raw/upload');
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = 'proyecto.pdf'; // Nombre fijo para descarga
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } else {
+    if (!pdfUrl) {
         alert("❌ El archivo PDF no está disponible.");
+        return;
     }
+
+    // Forzar parámetros de transformación para descarga
+    let downloadUrl = pdfUrl;
+    
+    // Si es URL de Cloudinary, añadir parámetros de transformación
+    if (pdfUrl.includes('cloudinary.com')) {
+        // Opción 1: Añadir flag de descarga
+        downloadUrl = pdfUrl.replace(/\/upload\//, '/upload/fl_attachment/');
+        
+        // Opción 2: Alternativa más robusta
+        // downloadUrl = pdfUrl.split('?')[0] + '?dl=1';
+    }
+
+    console.log("URL de descarga:", downloadUrl); // Para depuración
+    
+    // Crear enlace temporal
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'proyecto_' + Date.now() + '.pdf'; // Nombre único
+    link.target = '_blank'; // Abrir en nueva pestaña como respaldo
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 window.onload = () => {
