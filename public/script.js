@@ -1,22 +1,18 @@
 let projects = [];
 
-function addProject(title, authors, publicationDate, abstract, pdfUrl) {  // Asegúrate de recibir pdfUrl como parámetro
+function addProject(title, authors, publicationDate, abstract, pdfUrl) {
     const loggedInUser = checkLoggedInUser();
     if (!loggedInUser) {
         alert("❌ Debes iniciar sesión para agregar proyectos.");
-        return false;  // Retorna false si hay error
+        return false;
     }
 
-// Verificar si el proyecto ya existe
-const exists = projects.some(p => 
-    p.title === title && 
-    p.userEmail === loggedInUser.email
-);
-
-if (exists) {
-    alert("⚠️ Ya existe un proyecto con este título");
-    return false;
-}
+    // Verificar si el proyecto ya existe
+    const exists = projects.some(p => p.title === title && p.userEmail === loggedInUser.email);
+    if (exists) {
+        alert("⚠️ Ya existe un proyecto con este título");
+        return false;
+    }
 
     const project = {
         id: Date.now(),
@@ -24,36 +20,31 @@ if (exists) {
         authors: authors,
         publicationDate: publicationDate,
         abstract: abstract,
-        pdfUrl: pdfUrl,  // Usa el parámetro recibido
+        pdfUrl: pdfUrl,
         userEmail: loggedInUser.email
     };
     
     projects.push(project);
     saveProjectsToLocalStorage();
-    displayProjects();
-    window.location.href = "library.html"; // Redirigir aquí
-    return true;  // Retorna true si todo sale bien
+    return true; // Solo retornamos éxito, la redirección se maneja fuera
 }
 
 // Función para manejar el envío del formulario
-document.getElementById("project-form").addEventListener("submit", async (e) => {
+document.getElementById("project-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Obtener valores del formulario
     const title = document.getElementById("title").value;
     const authors = document.getElementById("authors").value;
     const publicationDate = document.getElementById("publication-date").value;
     const abstract = document.getElementById("abstract").value;
     const pdfFile = document.getElementById("pdf-file").files[0];
 
-    // Validación
     if (!title || !authors || !publicationDate || !abstract || !pdfFile) {
         alert("❌ Completa todos los campos obligatorios");
         return;
     }
 
     try {
-        // Subir a Cloudinary
         const cloudName = "repositorio-lp";
         const uploadPreset = "pdf_upload";
         const formData = new FormData();
@@ -68,11 +59,10 @@ document.getElementById("project-form").addEventListener("submit", async (e) => 
         const data = await response.json();
         
         if (data.secure_url) {
-            // Guardar proyecto con la URL de Cloudinary
             const success = addProject(title, authors, publicationDate, abstract, data.secure_url);
             if (success) {
                 alert("✅ Proyecto agregado correctamente");
-                window.location.href = "library.html";
+                window.location.href = "library.html"; // Redirección aquí
             }
         } else {
             throw new Error("No se obtuvo URL del archivo");

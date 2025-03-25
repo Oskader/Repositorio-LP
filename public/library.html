@@ -46,6 +46,8 @@
     <script>
         const loggedInUser = checkLoggedInUser();
         if (!loggedInUser) {
+            const userProjects = projects.filter(p => p.userEmail === loggedInUser.email);
+    displayProjects(userProjects, true);
             alert("🔒 Debes iniciar sesión.");
             window.location.href = "login.html";
         } else {
