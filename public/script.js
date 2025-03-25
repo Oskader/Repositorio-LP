@@ -7,6 +7,17 @@ function addProject(title, authors, publicationDate, abstract, pdfUrl) {  // Ase
         return false;  // Retorna false si hay error
     }
 
+// Verificar si el proyecto ya existe
+const exists = projects.some(p => 
+    p.title === title && 
+    p.userEmail === loggedInUser.email
+);
+
+if (exists) {
+    alert("⚠️ Ya existe un proyecto con este título");
+    return false;
+}
+
     const project = {
         id: Date.now(),
         title: title,
@@ -104,6 +115,7 @@ function displayProjects(filteredProjects = projects, showActions = false) {
 function openPDF(pdfUrl) {
     if (pdfUrl) {
         // Crear un enlace temporal para descargar el archivo
+        window.open(pdfUrl, '_blank'); // Abre en nueva pestaña
         const link = document.createElement('a');
         link.href = pdfUrl;
         link.download = pdfUrl.split('/').pop(); // Nombre del archivo

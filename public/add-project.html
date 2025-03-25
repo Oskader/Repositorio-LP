@@ -17,6 +17,7 @@
                 <h1>Agregar Proyecto</h1>
             </div>
             <div class="login-button">
+                <script src="script.js"></script>
                 <script>
                     const loggedInUser = checkLoggedInUser();
                     if (loggedInUser) {
@@ -79,27 +80,6 @@
         </footer>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-        document.getElementById("project-form")?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            
-            const title = document.getElementById("title").value;
-            const authors = document.getElementById("authors").value;
-            const publicationDate = document.getElementById("publication-date").value;
-            const abstract = document.getElementById("abstract").value;
-            const pdfFile = document.getElementById("pdf-file").files[0]?.name || "default.pdf";
-    
-            if (!title || !authors || !publicationDate || !abstract) {
-                alert("❌ Completa todos los campos obligatorios");
-                return;
-            }
-    
-            addProject(title, authors, publicationDate, abstract, pdfFile);
-            e.target.reset();
-            alert("✅ Proyecto agregado correctamente");
-            window.location.href = "library.html"; 
-        });
     </script>
     </script>
 </body>
