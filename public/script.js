@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
                 const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
+                    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
                     { method: 'POST', body: formData }
                 );
 
@@ -116,14 +116,14 @@ function displayProjects(filteredProjects = projects, showActions = false) {
 
 function openPDF(pdfUrl) {
     if (pdfUrl) {
-        // Crear un enlace temporal para descargar el archivo
-        window.open(pdfUrl, '_blank'); // Abre en nueva pestaña
+        // Reemplaza '/image/upload' por '/raw/upload' en la URL si existe
+        const downloadUrl = pdfUrl.replace('/image/upload', '/raw/upload');
         const link = document.createElement('a');
-        link.href = pdfUrl;
-        link.download = pdfUrl.split('/').pop(); // Nombre del archivo
+        link.href = downloadUrl;
+        link.download = 'proyecto.pdf'; // Nombre fijo para descarga
         document.body.appendChild(link);
-        link.click(); // Simular clic en el enlace
-        document.body.removeChild(link); // Eliminar el enlace temporal
+        link.click();
+        document.body.removeChild(link);
     } else {
         alert("❌ El archivo PDF no está disponible.");
     }
