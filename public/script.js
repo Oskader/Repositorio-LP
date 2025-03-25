@@ -1,75 +1,73 @@
 let projects = [];
 
-function addProject(title, authors, publicationDate, abstract, pdfFile) {
+function addProject(title, authors, publicationDate, abstract, pdfUrl) {  // Asegúrate de recibir pdfUrl como parámetro
     const loggedInUser = checkLoggedInUser();
     if (!loggedInUser) {
         alert("❌ Debes iniciar sesión para agregar proyectos.");
-        return;
+        return false;  // Retorna false si hay error
     }
 
     const project = {
-        id: Date.now(), // ID único
+        id: Date.now(),
         title: title,
         authors: authors,
         publicationDate: publicationDate,
         abstract: abstract,
-        pdfUrl: pdfUrl,
+        pdfUrl: pdfUrl,  // Usa el parámetro recibido
         userEmail: loggedInUser.email
     };
+    
     projects.push(project);
     saveProjectsToLocalStorage();
     displayProjects();
     window.location.href = "library.html"; // Redirigir aquí
+    return true;  // Retorna true si todo sale bien
 }
 
 // Función para manejar el envío del formulario
-document.getElementById("project-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // Evita que el formulario se envíe de forma tradicional
+document.getElementById("project-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    // Obtén los valores del formulario
+    // Obtener valores del formulario
     const title = document.getElementById("title").value;
     const authors = document.getElementById("authors").value;
     const publicationDate = document.getElementById("publication-date").value;
     const abstract = document.getElementById("abstract").value;
-    const pdfFile = document.getElementById("pdf-file").files[0]; // Archivo PDF seleccionado
+    const pdfFile = document.getElementById("pdf-file").files[0];
 
-    // Validación de campos
+    // Validación
     if (!title || !authors || !publicationDate || !abstract || !pdfFile) {
         alert("❌ Completa todos los campos obligatorios");
         return;
     }
 
-    // Configuración de Cloudinary
-    const cloudName = "repositorio-lp"; // Reemplaza con tu Cloud Name
-    const uploadPreset = "pdf_upload"; // Reemplaza con el nombre de tu Upload Preset
-
-    // Subir el archivo a Cloudinary
-    const formData = new FormData();
-    formData.append("file", pdfFile); // Archivo PDF
-    formData.append("upload_preset", uploadPreset); // Upload Preset
-
     try {
+        // Subir a Cloudinary
+        const cloudName = "repositorio-lp";
+        const uploadPreset = "pdf_upload";
+        const formData = new FormData();
+        formData.append("file", pdfFile);
+        formData.append("upload_preset", uploadPreset);
+
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
-            {
-                method: "POST",
-                body: formData,
-            }
+            { method: "POST", body: formData }
         );
 
         const data = await response.json();
-
+        
         if (data.secure_url) {
-            // Guardar los datos del proyecto con la URL del PDF
-            addProject(title, authors, publicationDate, abstract, data.secure_url);
-
-            alert("✅ Proyecto agregado correctamente");
-            window.location.href = "library.html"; // Redirigir a la biblioteca
+            // Guardar proyecto con la URL de Cloudinary
+            const success = addProject(title, authors, publicationDate, abstract, data.secure_url);
+            if (success) {
+                alert("✅ Proyecto agregado correctamente");
+                window.location.href = "library.html";
+            }
         } else {
-            alert("❌ Error al subir el archivo PDF");
+            throw new Error("No se obtuvo URL del archivo");
         }
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al subir:", error);
         alert("❌ Ocurrió un error al subir el archivo");
     }
 });
