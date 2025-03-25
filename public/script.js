@@ -30,46 +30,58 @@ function addProject(title, authors, publicationDate, abstract, pdfUrl) {
 }
 
 // Función para manejar el envío del formulario
-document.getElementById("project-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// Nuevo event listener con carga segura
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('project-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    const title = document.getElementById("title").value;
-    const authors = document.getElementById("authors").value;
-    const publicationDate = document.getElementById("publication-date").value;
-    const abstract = document.getElementById("abstract").value;
-    const pdfFile = document.getElementById("pdf-file").files[0];
+            // Obtener valores del formulario
+            const title = document.getElementById('title').value;
+            const authors = document.getElementById('authors').value;
+            const publicationDate = document.getElementById('publication-date').value;
+            const abstract = document.getElementById('abstract').value;
+            const pdfFile = document.getElementById('pdf-file').files[0];
 
-    if (!title || !authors || !publicationDate || !abstract || !pdfFile) {
-        alert("❌ Completa todos los campos obligatorios");
-        return;
-    }
-
-    try {
-        const cloudName = "repositorio-lp";
-        const uploadPreset = "pdf_upload";
-        const formData = new FormData();
-        formData.append("file", pdfFile);
-        formData.append("upload_preset", uploadPreset);
-
-        const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
-            { method: "POST", body: formData }
-        );
-
-        const data = await response.json();
-        
-        if (data.secure_url) {
-            const success = addProject(title, authors, publicationDate, abstract, data.secure_url);
-            if (success) {
-                alert("✅ Proyecto agregado correctamente");
-                window.location.href = "library.html"; // Redirección aquí
+            // Validación
+            if (!title || !authors || !publicationDate || !abstract || !pdfFile) {
+                alert('❌ Completa todos los campos obligatorios');
+                return;
             }
-        } else {
-            throw new Error("No se obtuvo URL del archivo");
-        }
-    } catch (error) {
-        console.error("Error al subir:", error);
-        alert("❌ Ocurrió un error al subir el archivo");
+
+            try {
+                // Subir a Cloudinary
+                const cloudName = "repositorio-lp";
+                const uploadPreset = "pdf_upload";
+                const formData = new FormData();
+                formData.append('file', pdfFile);
+                formData.append('upload_preset', uploadPreset);
+
+                console.log('Iniciando subida a Cloudinary...'); // Debug
+
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
+                    { method: 'POST', body: formData }
+                );
+
+                const data = await response.json();
+                console.log('Respuesta de Cloudinary:', data); // Debug
+
+                if (data.secure_url) {
+                    const success = addProject(title, authors, publicationDate, abstract, data.secure_url);
+                    if (success) {
+                        alert('✅ Proyecto agregado correctamente');
+                        window.location.href = 'library.html';
+                    }
+                } else {
+                    throw new Error('No se obtuvo URL del archivo');
+                }
+            } catch (error) {
+                console.error('Error completo:', error); // Debug detallado
+                alert('❌ Error al subir el archivo: ' + error.message);
+            }
+        });
     }
 });
 
@@ -119,8 +131,13 @@ function openPDF(pdfUrl) {
 
 window.onload = () => {
     loadUsersFromLocalStorage();
-    loadProjectsFromLocalStorage();
-    if (window.location.pathname.endsWith("index.html")) displayProjects();
+    loadProjectsFromLocalStorage(); // Asegúrate de cargar los proyectos
+    
+    // Verifica la ruta actual para decidir qué mostrar
+    if (window.location.pathname.endsWith("index.html") || 
+        window.location.pathname === "/") {
+        displayProjects(projects, false);
+    }
 };
 
 let users = []; // Asegúrate de que esta línea esté al inicio del archivo
