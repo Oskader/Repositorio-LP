@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formData = new FormData();
                 formData.append('file', pdfFile);
                 formData.append('upload_preset', uploadPreset);
-                formData.append('resource_type', 'raw');
 
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
@@ -131,18 +130,20 @@ function openPDF(pdfUrl) {
     
     // Si es URL de Cloudinary, añadir parámetros de transformación
     if (pdfUrl.includes('cloudinary.com')) {
-        // Construir URL correctamente
-        const parts = pdfUrl.split('/upload/');
-        if (parts.length === 2) {
-            downloadUrl = `${parts[0]}/upload/fl_attachment,${parts[1]}`;
-            
-            // Forzar extensión .pdf si no existe
-            if (!downloadUrl.endsWith('.pdf')) {
-                downloadUrl = `${downloadUrl.split('.').shift()}.pdf`;
-            }
+        // Insertar el flag de descarga ANTES de la versión
+        downloadUrl = pdfUrl.replace(
+            /\/upload\/(v\d+)\//, 
+            '/upload/$1/fl_attachment/'
+        );
+        
+        // Eliminar parámetros de transformación innecesarios
+        downloadUrl = downloadUrl.replace(/f_auto\/?/, '');
+        
+        // Asegurar extensión .pdf
+        if (!downloadUrl.endsWith('.pdf')) {
+            downloadUrl = downloadUrl.replace(/(\/[^/]+)$/, '$1.pdf');
         }
     }
-
 
     console.log("URL de descarga:", downloadUrl); // Para depuración
     
