@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('file', pdfFile);
                 formData.append('upload_preset', uploadPreset);
                 formData.append('resource_type', 'raw');
+                formData.append('public_id', `${title}_${Date.now()}.pdf`);
 
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
@@ -134,36 +135,35 @@ function openPDF(pdfUrl) {
         return;
     }
 
-    // Forzar parámetros de transformación para descarga
-    let downloadUrl = pdfUrl;
-    
-    // Si es URL de Cloudinary, añadir parámetros de transformación
-    if (pdfUrl.includes('cloudinary.com')) {
-        // Insertar el flag de descarga ANTES de la versión
-        downloadUrl = pdfUrl.replace(
-            /\/upload\/(v\d+)\//, 
-            '/upload/$1/fl_attachment/'
-        );
-        
-        // Eliminar parámetros de transformación innecesarios
-        downloadUrl = downloadUrl.replace(/f_auto\/?/, '');
-        
-        // Asegurar extensión .pdf
-        if (!downloadUrl.endsWith('.pdf')) {
-            downloadUrl = downloadUrl.replace(/(\/[^/]+)$/, '$1.pdf');
-        }
+    // Transformación de la URL para descarga
+    let downloadUrl = pdfUrl
+        .replace("/image/upload/", "/raw/upload/") // Cambiar a ruta raw
+        .replace(/(\/upload\/)(v\d+)/, "$1fl_attachment/$2") // Añadir flag de descarga
+        .replace(/f_auto\/?/, "") // Eliminar formato automático
+        .replace(/(\/v\d+\/)/, "$1"); // Asegurar estructura de versión
+
+    // Forzar extensión .pdf si no existe
+    if (!downloadUrl.endsWith(".pdf")) {
+        downloadUrl = downloadUrl.split("?")[0] + ".pdf";
     }
 
-    console.log("URL de descarga:", downloadUrl); // Para depuración
-    
+    console.log("URL de descarga procesada:", downloadUrl);
+
     // Crear enlace temporal
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = 'proyecto_' + Date.now() + '.pdf'; // Nombre único
-    link.target = '_blank'; // Abrir en nueva pestaña como respaldo
+    link.download = `proyecto_${Date.now()}.pdf`; // Nombre único
+    link.target = "_blank"; // Abrir en nueva pestaña como fallback
+    
+    // Simular clic
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    
+    // Limpiar
+    setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }, 100);
 }
 
 window.onload = () => {
