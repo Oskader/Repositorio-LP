@@ -51,40 +51,46 @@
 
     <script src="script.js"></script>
     <script>
-        // Cargar proyectos desde localStorage
-        loadProjectsFromLocalStorage();
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
 
-        // Obtener el ID del proyecto desde la URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectId = parseInt(urlParams.get('id'));
+            const { data: project } = await supabase
+                .from('projects')
+                .select('*')
+                .eq('id', projectId)
+                .single();
 
-        // Buscar el proyecto en la lista de proyectos
-        const project = projects.find(p => p.id === projectId);
+            if (project) {
+                document.getElementById('title').value = project.title;
+                document.getElementById('authors').value = project.authors;
+                document.getElementById('publication-date').value = project.publication_date;
+                document.getElementById('abstract').value = project.abstract;
+                document.getElementById('current-pdf').textContent = project.pdf_url.split('/').pop();
+            }
 
-        // Pre-llenar el formulario con los datos del proyecto
-        if (project) {
-            document.getElementById('title').value = project.title;
-            document.getElementById('authors').value = project.authors;
-            document.getElementById('publication-date').value = project.publicationDate;
-            document.getElementById('abstract').value = project.abstract;
-            document.getElementById('current-pdf').textContent = project.pdfFile; // Mostrar el nombre del archivo actual
-        }
+            document.getElementById('edit-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const updatedData = {
+                    title: document.getElementById('title').value,
+                    authors: document.getElementById('authors').value,
+                    publication_date: document.getElementById('publication-date').value,
+                    abstract: document.getElementById('abstract').value
+                };
 
-        // Manejar envío del formulario
-        document.getElementById('edit-form').addEventListener('submit', (e) => {
-            e.preventDefault();
+                // Manejar nuevo archivo PDF si se sube
+                const pdfFile = document.getElementById('pdf-file').files[0];
+                if (pdfFile) {
+                    updatedData.pdf_url = await uploadPDF(pdfFile);
+                }
 
-            const updatedData = {
-                title: document.getElementById('title').value,
-                authors: document.getElementById('authors').value,
-                publicationDate: document.getElementById('publication-date').value,
-                abstract: document.getElementById('abstract').value,
-                pdfFile: document.getElementById('pdf-file').files[0]?.name || project.pdfFile
-            };
-
-            updateProject(projectId, updatedData);
-            alert("✅ Proyecto actualizado correctamente");
-            window.location.href = "library.html";
+                const success = await updateProject(projectId, updatedData);
+                if (success) {
+                    alert("✅ Proyecto actualizado correctamente");
+                    window.location.href = "library.html";
+                }
+            });
         });
     </script>
 </body>

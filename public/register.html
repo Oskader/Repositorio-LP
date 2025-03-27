@@ -56,19 +56,31 @@
 
     <script src="script.js"></script>
     <script>
-        document.getElementById("register-form")?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirm-password").value;
-
-            if (password !== confirmPassword) {
-                alert("❌ Las contraseñas no coinciden");
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkLoggedInUser();
+            if (!user) {
+                alert("🔒 Debes iniciar sesión.");
+                window.location.href = "login.html";
                 return;
             }
-
-            registerUser(name, email, password);
+    
+            // Actualizar header
+            document.getElementById("login-button-container").innerHTML = `
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name">${user.user_metadata.name}</span>
+                    <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                </div>
+            `;
+    
+            // Cargar y mostrar proyectos
+            const projects = await loadUserProjects();
+            
+            if (projects.length === 0) {
+                document.getElementById("no-projects-message").style.display = "block";
+            } else {
+                displayProjects(projects, true);
+            }
         });
     </script>
 </body>
