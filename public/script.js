@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formData = new FormData();
                 formData.append('file', pdfFile);
                 formData.append('upload_preset', uploadPreset);
-                formData.append('access_mode', 'public'); 
                 formData.append('resource_type', 'raw');
 
                 console.log('Iniciando subida a Cloudinary...'); // Debug
@@ -72,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
                 console.log('Respuesta de Cloudinary:', data); // Debug
+                console.error('Respuesta completa de Cloudinary:', data);
 
                 if (data.error) {
                     throw new Error(`Cloudinary: ${data.error.message}`);
