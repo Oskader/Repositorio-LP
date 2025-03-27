@@ -59,12 +59,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('upload_preset', uploadPreset);
                 formData.append('access_mode', 'public'); 
                 formData.append('type', 'upload');
+                formData.append('resource_type', 'raw');
 
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
                 const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
-                    { method: 'POST', body: formData }
+                    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, // Añadir "raw/"
+                    { 
+                        method: 'POST', 
+                        body: formData 
+                    }
                 );
 
                 const data = await response.json();
