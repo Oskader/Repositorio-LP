@@ -59,12 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('upload_preset', uploadPreset);
                 formData.append('access_mode', 'public'); 
                 formData.append('type', 'upload');
-                formData.append('resource_type', 'raw');
+                formData.append('resource_type', 'auto');
 
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
                 const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, // Añadir "raw/"
+                    `https://api.cloudinary.com/v1_1/${cloudName}/upload`, // Añadir "raw/"
                     { 
                         method: 'POST', 
                         body: formData 
@@ -73,6 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
                 console.log('Respuesta de Cloudinary:', data); // Debug
+
+                if (data.error) {
+                    throw new Error(`Cloudinary: ${data.error.message}`);
+                }
 
                 if (data.secure_url) {
                     // Añadir extensión .pdf si no la tiene
