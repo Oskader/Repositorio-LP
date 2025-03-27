@@ -57,6 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formData = new FormData();
                 formData.append('file', pdfFile);
                 formData.append('upload_preset', uploadPreset);
+                formData.append('access_mode', 'public'); 
+                formData.append('type', 'upload');
 
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
