@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Iniciando subida a Cloudinary...'); // Debug
 
                 const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+                    `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
                     { method: 'POST', body: formData }
                 );
 
@@ -131,16 +131,18 @@ function openPDF(pdfUrl) {
     
     // Si es URL de Cloudinary, añadir parámetros de transformación
     if (pdfUrl.includes('cloudinary.com')) {
-        // Transformación correcta para descarga
-        downloadUrl = pdfUrl
-            .replace(/\/upload\//, '/upload/fl_attachment/') // Añadir flag de descarga
-            .replace(/(\/v\d+\/)/, '$1f_auto/'); // Asegurar formato
-        
-        // Forzar extensión .pdf si no existe
-        if (!downloadUrl.endsWith('.pdf')) {
-            downloadUrl += '.pdf';
+        // Construir URL correctamente
+        const parts = pdfUrl.split('/upload/');
+        if (parts.length === 2) {
+            downloadUrl = `${parts[0]}/upload/fl_attachment,${parts[1]}`;
+            
+            // Forzar extensión .pdf si no existe
+            if (!downloadUrl.endsWith('.pdf')) {
+                downloadUrl = `${downloadUrl.split('.').shift()}.pdf`;
+            }
         }
     }
+
 
     console.log("URL de descarga:", downloadUrl); // Para depuración
     
