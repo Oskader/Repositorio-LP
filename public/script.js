@@ -70,7 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Respuesta de Cloudinary:', data); // Debug
 
                 if (data.secure_url) {
-                    const success = addProject(title, authors, publicationDate, abstract, data.secure_url);
+                    // Añadir extensión .pdf si no la tiene
+                    const pdfUrl = data.secure_url.endsWith('.pdf') 
+                        ? data.secure_url 
+                        : `${data.secure_url}.pdf`;
+                    
+                    const success = addProject(title, authors, publicationDate, abstract, pdfUrl);
                     if (success) {
                         alert('✅ Proyecto agregado correctamente');
                         window.location.href = 'library.html';
@@ -126,9 +131,15 @@ function openPDF(pdfUrl) {
     
     // Si es URL de Cloudinary, añadir parámetros de transformación
     if (pdfUrl.includes('cloudinary.com')) {
-        const url = new URL(pdfUrl);
-        url.searchParams.set('fl_attachment', ''); // Añadir parámetro de descarga
-        downloadUrl = url.toString();
+        // Transformación correcta para descarga
+        downloadUrl = pdfUrl
+            .replace(/\/upload\//, '/upload/fl_attachment/') // Añadir flag de descarga
+            .replace(/(\/v\d+\/)/, '$1f_auto/'); // Asegurar formato
+        
+        // Forzar extensión .pdf si no existe
+        if (!downloadUrl.endsWith('.pdf')) {
+            downloadUrl += '.pdf';
+        }
     }
 
     console.log("URL de descarga:", downloadUrl); // Para depuración
