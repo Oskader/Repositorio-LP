@@ -13,7 +13,7 @@
                 <a href="index.html" class="btn-library">Volver</a>
             </div>
             <div class="header-content">
-                <img src="images/logo.png" alt="Google Académico Logo" class="logo">
+                <img src="images/logo.png" alt="Liceo la presentacion Logo" class="logo">
                 <h1>Registro</h1>
             </div>
             <div class="login-button">
@@ -54,33 +54,22 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const user = await checkLoggedInUser();
-            if (!user) {
-                alert("🔒 Debes iniciar sesión.");
-                window.location.href = "login.html";
+        document.getElementById("register-form")?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+
+            if (password !== confirmPassword) {
+                alert("❌ Las contraseñas no coinciden");
                 return;
             }
-    
-            // Actualizar header
-            document.getElementById("login-button-container").innerHTML = `
-                <div class="user-info">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="user-name">${user.user_metadata.name}</span>
-                    <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
-                </div>
-            `;
-    
-            // Cargar y mostrar proyectos
-            const projects = await loadUserProjects();
-            
-            if (projects.length === 0) {
-                document.getElementById("no-projects-message").style.display = "block";
-            } else {
-                displayProjects(projects, true);
-            }
+
+            registerUser(name, email, password);
         });
     </script>
 </body>

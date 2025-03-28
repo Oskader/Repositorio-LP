@@ -1,218 +1,261 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+// Configuración de Supabase
+const SUPABASE_URL = 'https://ufrrttmrjopwzowzjcnz.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcnJ0dG1yam9wd3pvd3pqY256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMTUyMjYsImV4cCI6MjA1ODY5MTIyNn0.LzHsMlrQZ4pOL4A0BVEffpvXNaWsF_odTdlSjAdpphQ';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabaseUrl = 'https://ufrrttmrjopwzowzjcnz.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcnJ0dG1yam9wd3pvd3pqY256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMTUyMjYsImV4cCI6MjA1ODY5MTIyNn0.LzHsMlrQZ4pOL4A0BVEffpvXNaWsF_odTdlSjAdpphQ';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// ==================== AUTENTICACIÓN ====================
+// Función para registrar usuario
 async function registerUser(name, email, password) {
+  try {
     const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-            data: { name: name }
+      email: email,
+      password: password,
+      options: {
+        data: {
+          name: name
         }
+      }
     });
     
-    if (error) {
-        alert("❌ Error: " + error.message);
-        return;
-    }
-    alert("✅ Registro exitoso. Verifica tu correo.");
-    window.location.href = "login.html";
+    if (error) throw error;
+    alert('✅ Registro exitoso. Verifica tu correo!');
+    window.location.href = 'login.html';
+  } catch (error) {
+    alert(`❌ Error: ${error.message}`);
+  }
 }
 
+// Función para iniciar sesión
 async function loginUser(email, password) {
+  try {
     const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
+      email: email,
+      password: password
     });
-
-    if (error) {
-        alert("❌ Error: " + error.message);
-        return;
-    }
-    window.location.href = "index.html";
-}
-
-async function checkLoggedInUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
-}
-
-async function logoutUser() {
-    const { error } = await supabase.auth.signOut();
-    if (!error) window.location.href = "index.html";
-}
-
-// ==================== MANEJO DE PDFs ====================
-async function uploadPDF(file) {
-    const fileName = `${Date.now()}_${file.name}`;
-    const { data, error } = await supabase.storage
-        .from('pdfs')
-        .upload(fileName, file);
 
     if (error) throw error;
-    
-    const { data: urlData } = supabase.storage
-        .from('pdfs')
-        .getPublicUrl(data.path);
-    
-    return urlData.publicUrl;
+    alert('✅ Inicio de sesión exitoso');
+    window.location.href = 'index.html';
+  } catch (error) {
+    alert(`❌ Error: ${error.message}`);
+  }
 }
 
-// ==================== MANEJO DE PROYECTOS ====================
+// Función para cerrar sesión
+async function logoutUser() {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    alert('✅ Sesión cerrada correctamente');
+    window.location.href = 'index.html';
+  } catch (error) {
+    alert(`❌ Error: ${error.message}`);
+  }
+}
+
+// Verificar usuario autenticado
+async function checkLoggedInUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+// Subir PDF a Supabase Storage
+async function uploadPDF(file) {
+  try {
+    const fileName = `${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('pdfs')
+      .upload(fileName, file);
+
+    if (error) throw error;
+    return `${SUPABASE_URL}/storage/v1/object/public/pdfs/${data.path}`;
+  } catch (error) {
+    throw new Error(`Error subiendo PDF: ${error.message}`);
+  }
+}
+
+// Manejar agregar proyecto
 async function addProject(projectData) {
+  try {
     const { data, error } = await supabase
-        .from('projects')
-        .insert([projectData])
-        .select();
+      .from('projects')
+      .insert(projectData)
+      .select();
 
-    return !error;
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    throw new Error(`Error guardando proyecto: ${error.message}`);
+  }
 }
 
-async function loadUserProjects() {
+// Obtener proyectos del usuario
+async function getUserProjects() {
+  try {
     const user = await checkLoggedInUser();
     if (!user) return [];
     
     const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', user.id);
-    
-    return data || [];
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
-async function deleteProject(projectId) {
-    const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
-
-    if (!error && window.location.pathname.endsWith("library.html")) {
-        const projects = await loadUserProjects();
-        const noProjectsMessage = document.getElementById("no-projects-message");
-        noProjectsMessage.style.display = projects.length === 0 ? "block" : "none";
-        displayProjects(projects, true);
-    }
-}
-
-async function updateProject(projectId, updatedData) {
-    const { error } = await supabase
-        .from('projects')
-        .update(updatedData)
-        .eq('id', projectId);
-
-    return !error;
-}
-
-// ==================== FUNCIONES DE UI ====================
-function displayProjects(filteredProjects = [], showActions = false) {
+// Mostrar proyectos en la interfaz
+async function displayProjects(showActions = false) {
+  try {
+    const projects = await getUserProjects();
     const resultsSection = document.getElementById("results");
+    
     if (!resultsSection) return;
 
-    resultsSection.innerHTML = filteredProjects.map(project => `
-        <article class="result-item">
-            ${showActions ? `
-                <div class="project-actions">
-                    <button onclick="redirectToEdit('${project.id}')" class="btn-edit">✏️ Editar</button>
-                    <button onclick="deleteProject('${project.id}')" class="btn-delete">🗑️ Eliminar</button>
-                </div>
-            ` : ''}
-            <h2><a href="#" onclick="openPDF('${project.pdf_url}')">${project.title}</a></h2>
+    resultsSection.innerHTML = projects.map(project => `
+      <article class="result-item">
+        ${showActions ? `
+          <div class="project-actions">
+            <button onclick="redirectToEdit('${project.id}')" class="btn-edit">✏️ Editar</button>
+            <button onclick="deleteProject('${project.id}')" class="btn-delete">🗑️ Eliminar</button>
+          </div>
+        ` : ''}
+        <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
+        <p class="author">Autores: ${project.authors}</p>
+        <p class="abstract">${project.abstract}</p>
+        <p class="source">Publicación: ${project.publication_date}</p>
+      </article>
+    `).join("");
+
+    // Mostrar mensaje si no hay proyectos
+    const noProjectsMessage = document.getElementById("no-projects-message");
+    if (noProjectsMessage) {
+      noProjectsMessage.style.display = projects.length === 0 ? "block" : "none";
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Eliminar proyecto
+async function deleteProject(projectId) {
+  try {
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+
+    if (error) throw error;
+    await displayProjects(true);
+    alert('✅ Proyecto eliminado correctamente');
+  } catch (error) {
+    alert(`❌ Error: ${error.message}`);
+  }
+}
+
+// Actualizar proyecto
+async function updateProject(projectId, updatedData) {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .update(updatedData)
+      .eq('id', projectId)
+      .select();
+
+    if (error) throw error;
+    alert('✅ Proyecto actualizado correctamente');
+    return data[0];
+  } catch (error) {
+    throw new Error(`Error actualizando proyecto: ${error.message}`);
+  }
+}
+
+// Event Listener para formulario de agregar proyecto
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('project-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const user = await checkLoggedInUser();
+      if (!user) {
+        alert('❌ Debes iniciar sesión para agregar proyectos');
+        return;
+      }
+
+      const formData = new FormData(e.target);
+      const pdfFile = document.getElementById('pdf-file').files[0];
+
+      try {
+        const pdfUrl = await uploadPDF(pdfFile);
+        
+        await addProject({
+          title: formData.get('title'),
+          authors: formData.get('authors'),
+          publication_date: formData.get('publication-date'),
+          abstract: formData.get('abstract'),
+          pdf_url: pdfUrl,
+          user_id: user.id
+        });
+
+        alert('✅ Proyecto agregado correctamente');
+        window.location.href = 'library.html';
+      } catch (error) {
+        alert(`❌ Error: ${error.message}`);
+      }
+    });
+  }
+});
+
+// Manejar búsqueda de proyectos
+document.addEventListener('DOMContentLoaded', () => {
+  const searchForm = document.getElementById('search-form');
+  if (searchForm) {
+    searchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = document.getElementById('search-input').value.toLowerCase();
+      
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .or(`title.ilike.%${query}%,authors.ilike.%${query}%,abstract.ilike.%${query}%`);
+
+        if (error) throw error;
+        
+        const resultsSection = document.getElementById("results");
+        resultsSection.innerHTML = data.map(project => `
+          <article class="result-item">
+            <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
             <p class="author">Autores: ${project.authors}</p>
             <p class="abstract">${project.abstract}</p>
             <p class="source">Publicación: ${project.publication_date}</p>
-        </article>
-    `).join("");
-}
-
-function openPDF(pdfUrl) {
-    if (!pdfUrl) {
-        alert("❌ El archivo PDF no está disponible.");
-        return;
-    }
-    
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.target = "_blank";
-    link.click();
-}
-
-function redirectToEdit(projectId) {
-    window.location.href = `edit-project.html?id=${projectId}`;
-}
-
-// ==================== EVENT LISTENERS ====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Manejar formulario de proyectos
-    const form = document.getElementById('project-form');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const title = document.getElementById('title').value;
-            const authors = document.getElementById('authors').value;
-            const publicationDate = document.getElementById('publication-date').value;
-            const abstract = document.getElementById('abstract').value;
-            const pdfFile = document.getElementById('pdf-file').files[0];
-
-            if (!title || !authors || !publicationDate || !abstract || !pdfFile) {
-                alert('❌ Completa todos los campos obligatorios');
-                return;
-            }
-
-            try {
-                const pdfUrl = await uploadPDF(pdfFile);
-                const user = await checkLoggedInUser();
-
-                const projectData = {
-                    title,
-                    authors,
-                    publication_date: publicationDate,
-                    abstract,
-                    pdf_url: pdfUrl,
-                    user_id: user.id
-                };
-
-                const success = await addProject(projectData);
-                if (success) {
-                    alert('✅ Proyecto agregado correctamente');
-                    window.location.href = 'library.html';
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        });
-    }
-
-    // Cargar proyectos en index.html
-    if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
-        (async () => {
-            const { data: projects } = await supabase
-                .from('projects')
-                .select('*');
-            displayProjects(projects || [], false);
-        })();
-    }
+          </article>
+        `).join("");
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
 });
 
-// ==================== INICIALIZACIÓN ====================
-window.onload = async () => {
-    // Manejar library.html
-    if (window.location.pathname.endsWith("library.html")) {
-        const user = await checkLoggedInUser();
-        if (!user) {
-            alert("🔒 Debes iniciar sesión.");
-            window.location.href = "login.html";
-            return;
-        }
-
-        const projects = await loadUserProjects();
-        if (projects.length === 0) {
-            document.getElementById("no-projects-message").style.display = "block";
-        } else {
-            displayProjects(projects, true);
-        }
+// Cargar proyectos al iniciar
+window.addEventListener('load', async () => {
+  const user = await checkLoggedInUser();
+  
+  if (window.location.pathname.endsWith("library.html")) {
+    if (!user) {
+      alert("🔒 Debes iniciar sesión.");
+      window.location.href = "login.html";
+      return;
     }
-};
+    await displayProjects(true);
+  }
+  
+  if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
+    await displayProjects(false);
+  }
+});

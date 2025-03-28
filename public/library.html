@@ -42,35 +42,29 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loggedInUser = checkLoggedInUser();
-            if (!loggedInUser) {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkLoggedInUser();
+            if (!user) {
                 alert("🔒 Debes iniciar sesión.");
                 window.location.href = "login.html";
                 return;
             }
-    
+        
             // Actualizar header
             document.getElementById("login-button-container").innerHTML = `
                 <div class="user-info">
                     <i class="fas fa-user-circle"></i>
-                    <span class="user-name">${loggedInUser.name}</span>
+                    <span class="user-name">${user.email}</span>
                     <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
                 </div>
             `;
-    
-            // Cargar y mostrar proyectos
-            loadProjectsFromLocalStorage();
-            const userProjects = projects.filter(p => p.userEmail === loggedInUser.email);
-            
-            if (userProjects.length === 0) {
-                document.getElementById("no-projects-message").style.display = "block";
-            } else {
-                displayProjects(userProjects, true);
-            }
+        
+            // Cargar proyectos
+            await displayProjects(true);
         });
-    </script>
+        </script>
 </body>
 </html>

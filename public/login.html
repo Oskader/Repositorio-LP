@@ -46,13 +46,14 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script>
-        document.getElementById("login-form")?.addEventListener("submit", async (e) => {
+        document.getElementById("login-form")?.addEventListener("submit", (e) => {
             e.preventDefault();
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
-            await loginUser(email, password);
+            loginUser(email, password);
         });
     </script>
 </body>
