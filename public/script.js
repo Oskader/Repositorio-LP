@@ -56,9 +56,27 @@ async function logoutUser() {
 async function checkLoggedInUser() {
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
-        return user || null;
+        
+        if (!user || error) {
+            console.error("Usuario no autenticado:", error);
+            return null;
+        }
+        
+        // Verificar que el usuario exista en la tabla 'users'
+        const { data: dbUser, error: dbError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+
+        if (dbError || !dbUser) {
+            console.error("Usuario no registrado en la tabla users:", dbError);
+            return null;
+        }
+        
+        return user;
     } catch (error) {
-        console.error("Error checking user:", error);
+        console.error("Error verificando usuario:", error);
         return null;
     }
 }
@@ -183,13 +201,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('project-form');
   if (form) {
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const user = await checkLoggedInUser();
-      if (!user) {
-        alert('❌ Debes iniciar sesión para agregar proyectos');
-        return;
-      }
+        e.preventDefault();
+        
+        const user = await checkLoggedInUser();
+        
+        if (!user) {
+            alert('❌ Debes iniciar sesión para agregar proyectos');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Verificar que el user.id existe
+        if (!user.id) {
+            alert('❌ Error: No se pudo obtener el ID del usuario');
+            return;
+        }
 
       const formData = new FormData(e.target);
       const pdfFile = document.getElementById('pdf-file').files[0];
