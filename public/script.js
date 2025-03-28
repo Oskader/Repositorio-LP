@@ -26,19 +26,21 @@ async function registerUser(name, email, password) {
 
 // Función para iniciar sesión
 async function loginUser(email, password) {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-    if (error) throw error;
-    alert('✅ Inicio de sesión exitoso');
-    window.location.href = 'index.html';
-  } catch (error) {
-    alert(`❌ Error: ${error.message}`);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+  
+      if (error) throw error;
+      
+      // Forzar recarga para actualizar el estado
+      window.location.href = "index.html?t=" + Date.now(); // Evitar caché
+      
+    } catch (error) {
+      alert(`❌ Error: ${error.message}`);
+    }
   }
-}
 
 // Función para cerrar sesión
 async function logoutUser() {

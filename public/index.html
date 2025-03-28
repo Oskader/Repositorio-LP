@@ -17,8 +17,8 @@
                 <img src="images/logo.png" alt="Logo Repositorio LP" class="logo">
                 <h1>Repositorio LP</h1>
             </div>
-            <div class="login-button">
-                <!-- Espacio para el botón dinámico -->
+            <div class="login-button" id="login-button-container">
+                <!-- Contenido dinámico -->
             </div>
         </header>
 
@@ -44,54 +44,63 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     
+    <!-- Script de manejo de UI -->
     <script>
-        // Cargar y mostrar proyectos al iniciar
-        document.addEventListener("DOMContentLoaded", async () => {
-            // Cargar estado de autenticación
-            const user = await checkLoggedInUser();
-            const loginButton = document.querySelector('.login-button');
-            
-            if (user) {
-                loginButton.innerHTML = `
-                    <div class="user-info">
-                        <i class="fas fa-user-circle"></i>
-                        <span class="user-name">${user.email}</span>
-                        <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
-                    </div>
-                `;
-            } else {
-                loginButton.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
-            }
-            
-            // Cargar proyectos
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Actualizar estado de autenticación
+            const updateAuthUI = async () => {
+                const container = document.getElementById('login-button-container');
+                const user = await checkLoggedInUser();
+                
+                if (user) {
+                    container.innerHTML = `
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="user-name">${user.email}</span>
+                            <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
+                }
+            };
+
+            // Cargar proyectos y UI inicial
+            await updateAuthUI();
             await displayProjects(false);
+
+            // Configurar evento de búsqueda
+            document.getElementById("search-form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const query = document.getElementById("search-input").value.toLowerCase();
+                
+                try {
+                    const { data, error } = await supabase
+                        .from('projects')
+                        .select('*')
+                        .or(`title.ilike.%${query}%,authors.ilike.%${query}%,abstract.ilike.%${query}%`);
+
+                    if (error) throw error;
+                    
+                    const resultsSection = document.getElementById("results");
+                    resultsSection.innerHTML = data.map(project => `
+                        <article class="result-item">
+                            <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
+                            <p class="author">Autores: ${project.authors}</p>
+                            <p class="abstract">${project.abstract}</p>
+                            <p class="source">Publicación: ${project.publication_date}</p>
+                        </article>
+                    `).join("");
+                } catch (error) {
+                    console.error("Error en búsqueda:", error);
+                }
+            });
         });
 
-        // Búsqueda actualizada
-        document.getElementById("search-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const query = document.getElementById("search-input").value.toLowerCase();
-            
-            try {
-                const { data, error } = await supabase
-                    .from('projects')
-                    .select('*')
-                    .or(`title.ilike.%${query}%,authors.ilike.%${query}%,abstract.ilike.%${query}%`);
-
-                if (error) throw error;
-                
-                const resultsSection = document.getElementById("results");
-                resultsSection.innerHTML = data.map(project => `
-                    <article class="result-item">
-                        <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
-                        <p class="author">Autores: ${project.authors}</p>
-                        <p class="abstract">${project.abstract}</p>
-                        <p class="source">Publicación: ${project.publication_date}</p>
-                    </article>
-                `).join("");
-            } catch (error) {
-                console.error("Error en búsqueda:", error);
-            }
+        // Manejar recargas de autenticación
+        window.addEventListener('supabase.auth.stateChange', async () => {
+            await updateAuthUI();
+            await displayProjects(false);
         });
     </script>
 </body>
