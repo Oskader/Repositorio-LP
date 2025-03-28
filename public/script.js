@@ -54,8 +54,13 @@ async function logoutUser() {
 
 // Verificar usuario autenticado
 async function checkLoggedInUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        return user || null;
+    } catch (error) {
+        console.error("Error checking user:", error);
+        return null;
+    }
 }
 
 // Subir PDF a Supabase Storage

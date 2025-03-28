@@ -14,26 +14,11 @@
                 <a href="library.html" class="btn-library">Mi biblioteca</a>
             </div>
             <div class="header-content">
-                <img src="images/logo.png" alt="Google Académico Logo" class="logo">
+                <img src="images/logo.png" alt="Logo Repositorio LP" class="logo">
                 <h1>Repositorio LP</h1>
             </div>
             <div class="login-button">
-                <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-                <script src="script.js"></script>
-                <script>
-                    const loggedInUser = checkLoggedInUser();
-                    if (loggedInUser) {
-                        document.write(`
-                            <div class="user-info">
-                                <i class="fas fa-user-circle"></i> <!-- Ícono de perfil -->
-                                <span class="user-name">${loggedInUser.name}</span>
-                                <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
-                            </div>
-                        `);
-                    } else {
-                        document.write('<a href="login.html" class="btn-login">Iniciar sesión</a>');
-                    }
-                </script>
+                <!-- Espacio para el botón dinámico -->
             </div>
         </header>
 
@@ -46,7 +31,7 @@
 
             <!-- Sección de resultados -->
             <section class="results" id="results">
-                <!-- Aquí se mostrarán los proyectos dinámicamente -->
+                <!-- Proyectos se cargarán aquí -->
             </section>
         </main>
 
@@ -55,22 +40,44 @@
         </footer>
     </div>
 
+    <!-- Scripts en orden correcto -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+    
     <script>
-        // Reemplazar todo el script de index.html por:
+        // Cargar y mostrar proyectos al iniciar
         document.addEventListener("DOMContentLoaded", async () => {
+            // Cargar estado de autenticación
+            const user = await checkLoggedInUser();
+            const loginButton = document.querySelector('.login-button');
+            
+            if (user) {
+                loginButton.innerHTML = `
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="user-name">${user.email}</span>
+                        <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                    </div>
+                `;
+            } else {
+                loginButton.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
+            }
+            
+            // Cargar proyectos
             await displayProjects(false);
         });
-        
+
+        // Búsqueda actualizada
         document.getElementById("search-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const query = document.getElementById("search-input").value;
+            const query = document.getElementById("search-input").value.toLowerCase();
             
             try {
                 const { data, error } = await supabase
                     .from('projects')
                     .select('*')
-                    .or(`title.ilike.%${query}%,authors.ilike.%${query}%`);
-                
+                    .or(`title.ilike.%${query}%,authors.ilike.%${query}%,abstract.ilike.%${query}%`);
+
                 if (error) throw error;
                 
                 const resultsSection = document.getElementById("results");
@@ -83,9 +90,9 @@
                     </article>
                 `).join("");
             } catch (error) {
-                console.error(error);
+                console.error("Error en búsqueda:", error);
             }
         });
-        </script>
+    </script>
 </body>
 </html>
