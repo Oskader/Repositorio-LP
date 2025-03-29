@@ -58,10 +58,10 @@
     <script src="script.js"></script>
     <script>
         
-        document.getElementById("register-form").addEventListener("submit", async (e) => {
+        document.getElementById("register-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value.toLowerCase().trim(); // Normalizar email
+  const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
   const confirmPassword = document.getElementById("confirm-password").value;
 
@@ -70,11 +70,7 @@
     return;
   }
 
-  try {
-    await registerUser(name, email, password);
-  } catch (error) {
-    alert(error.message);
-  }
+  await registerUser(name, email, password);
 });
     </script>
 </body>

@@ -9,21 +9,32 @@ async function registerUser(name, email, password) {
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
-      options: { data: { name: name } }
-    });
-
-    if (error) {
-      if (error.message.includes("already registered")) {
-        throw new Error("❌ Este correo ya está registrado");
+      options: {
+        data: {
+          name: name
+        },
+        emailRedirectTo: window.location.origin // Redirigir automáticamente
       }
-      throw error;
-    }
+    });
+    
+    if (error) throw error;
+    
+    // Insertar usuario directamente en la tabla 'users'
+    const { error: dbError } = await supabase
+      .from('users')
+      .insert({
+        id: data.user.id,
+        email: email,
+        name: name
+      });
 
-    alert("✅ Registro exitoso");
-    window.location.href = "index.html";
+    if (dbError) throw dbError;
+    
+    alert('✅ Registro exitoso!');
+    window.location.href = 'index.html'; // Redirigir directamente
     
   } catch (error) {
-    alert(error.message);
+    alert(`❌ Error: ${error.message}`);
   }
 }
 
@@ -99,34 +110,28 @@ async function addProject(projectData) {
 }
 
 // Obtener proyectos del usuario
-async function getProjects(showAll = false) {
+async function getUserProjects() {
   try {
-    let query = supabase.from('projects').select('*');
+    const user = await checkLoggedInUser();
+    if (!user) return [];
     
-    // Si no es "showAll" y hay usuario logeado, filtrar por su ID
-    if (!showAll) {
-      const user = await checkLoggedInUser();
-      if (user) {
-        query = query.eq('user_id', user.id);
-      } else {
-        // Si no hay usuario, no devolver nada (o podrías cambiar esto para mostrar públicos)
-        return [];
-      }
-    }
-    
-    const { data, error } = await query;
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id);
+
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error("Error cargando proyectos:", error);
+    console.error(error);
     return [];
   }
 }
 
 // Mostrar proyectos en la interfaz
-async function displayProjects(showActions = false, showAll = false) {
+async function displayProjects(showActions = false) {
   try {
-    const projects = await getProjects(showAll);
+    const projects = await getUserProjects();
     const resultsSection = document.getElementById("results");
     
     if (!resultsSection) return;
