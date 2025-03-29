@@ -9,32 +9,21 @@ async function registerUser(name, email, password) {
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
-      options: {
-        data: {
-          name: name
-        },
-        emailRedirectTo: window.location.origin // Redirigir automáticamente
-      }
+      options: { data: { name: name } }
     });
-    
-    if (error) throw error;
-    
-    // Insertar usuario directamente en la tabla 'users'
-    const { error: dbError } = await supabase
-      .from('users')
-      .insert({
-        id: data.user.id,
-        email: email,
-        name: name
-      });
 
-    if (dbError) throw dbError;
-    
-    alert('✅ Registro exitoso!');
-    window.location.href = 'index.html'; // Redirigir directamente
+    if (error) {
+      if (error.message.includes("already registered")) {
+        throw new Error("❌ Este correo ya está registrado");
+      }
+      throw error;
+    }
+
+    alert("✅ Registro exitoso");
+    window.location.href = "index.html";
     
   } catch (error) {
-    alert(`❌ Error: ${error.message}`);
+    alert(error.message);
   }
 }
 
