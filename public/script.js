@@ -110,28 +110,34 @@ async function addProject(projectData) {
 }
 
 // Obtener proyectos del usuario
-async function getUserProjects() {
+async function getProjects(showAll = false) {
   try {
-    const user = await checkLoggedInUser();
-    if (!user) return [];
+    let query = supabase.from('projects').select('*');
     
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('user_id', user.id);
-
+    // Si no es "showAll" y hay usuario logeado, filtrar por su ID
+    if (!showAll) {
+      const user = await checkLoggedInUser();
+      if (user) {
+        query = query.eq('user_id', user.id);
+      } else {
+        // Si no hay usuario, no devolver nada (o podrías cambiar esto para mostrar públicos)
+        return [];
+      }
+    }
+    
+    const { data, error } = await query;
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error(error);
+    console.error("Error cargando proyectos:", error);
     return [];
   }
 }
 
 // Mostrar proyectos en la interfaz
-async function displayProjects(showActions = false) {
+async function displayProjects(showActions = false, showAll = false) {
   try {
-    const projects = await getUserProjects();
+    const projects = await getProjects(showAll);
     const resultsSection = document.getElementById("results");
     
     if (!resultsSection) return;

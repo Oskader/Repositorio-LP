@@ -100,7 +100,7 @@
         // Manejar recargas de autenticación
         window.addEventListener('supabase.auth.stateChange', async () => {
             await updateAuthUI();
-            await displayProjects(false);
+            await displayProjects(false, true);
         });
     </script>
 </body>
