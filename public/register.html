@@ -57,20 +57,21 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script>
-        document.getElementById("register-form")?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirm-password").value;
+        
+        document.getElementById("register-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirm-password").value;
 
-            if (password !== confirmPassword) {
-                alert("❌ Las contraseñas no coinciden");
-                return;
-            }
+  if (password !== confirmPassword) {
+    alert("❌ Las contraseñas no coinciden");
+    return;
+  }
 
-            registerUser(name, email, password);
-        });
+  await registerUser(name, email, password);
+});
     </script>
 </body>
 </html>

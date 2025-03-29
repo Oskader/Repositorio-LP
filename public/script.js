@@ -12,13 +12,27 @@ async function registerUser(name, email, password) {
       options: {
         data: {
           name: name
-        }
+        },
+        emailRedirectTo: window.location.origin // Redirigir automáticamente
       }
     });
     
     if (error) throw error;
-    alert('✅ Registro exitoso. Verifica tu correo!');
-    window.location.href = 'login.html';
+    
+    // Insertar usuario directamente en la tabla 'users'
+    const { error: dbError } = await supabase
+      .from('users')
+      .insert({
+        id: data.user.id,
+        email: email,
+        name: name
+      });
+
+    if (dbError) throw dbError;
+    
+    alert('✅ Registro exitoso!');
+    window.location.href = 'index.html'; // Redirigir directamente
+    
   } catch (error) {
     alert(`❌ Error: ${error.message}`);
   }
@@ -56,31 +70,13 @@ async function logoutUser() {
 
 // Verificar usuario autenticado
 async function checkLoggedInUser() {
-    try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (!user || error) {
-            console.error("Usuario no autenticado:", error);
-            return null;
-        }
-        
-        // Verificar que el usuario exista en la tabla 'users'
-        const { data: dbUser, error: dbError } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', user.id)
-            .single();
-
-        if (dbError || !dbUser) {
-            console.error("Usuario no registrado en la tabla users:", dbError);
-            return null;
-        }
-        
-        return user;
-    } catch (error) {
-        console.error("Error verificando usuario:", error);
-        return null;
-    }
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    return user || null;
+  } catch (error) {
+    console.error("Error verificando usuario:", error);
+    return null;
+  }
 }
 
 // Subir PDF a Supabase Storage
