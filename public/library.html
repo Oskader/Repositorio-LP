@@ -33,7 +33,7 @@
         
             <!-- Mensaje si no hay proyectos (opcional) -->
             <div id="no-projects-message" style="display: none; text-align: center;">
-                <p>No hay proyectos en tu biblioteca.</p>
+                <p>📭 No hay proyectos en tu biblioteca.</p>
             </div>
         </main>
 
@@ -57,7 +57,7 @@
             document.getElementById("login-button-container").innerHTML = `
                 <div class="user-info">
                     <i class="fas fa-user-circle"></i>
-                    <span class="user-name">${user.email}</span>
+                    <span class="user-name">${user.name}</span>
                     <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
                 </div>
             `;

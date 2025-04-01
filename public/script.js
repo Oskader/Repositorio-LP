@@ -1,6 +1,6 @@
 // Configuración de Supabase
-const SUPABASE_URL = 'https://ufrrttmrjopwzowzjcnz.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcnJ0dG1yam9wd3pvd3pqY256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMTUyMjYsImV4cCI6MjA1ODY5MTIyNn0.LzHsMlrQZ4pOL4A0BVEffpvXNaWsF_odTdlSjAdpphQ';
+const SUPABASE_URL = 'https://wmrjlpzwmhlphzdpplcl.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcmpscHp3bWhscGh6ZHBwbGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyMTYxNTcsImV4cCI6MjA1ODc5MjE1N30.s51lyIpWv8NIMfNiJfYwYbb-rJnG17_BbVYHxD5YxOo';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Función para registrar usuario
@@ -10,31 +10,27 @@ async function registerUser(name, email, password) {
       email: email,
       password: password,
       options: {
-        data: {
-          name: name
-        },
-        emailRedirectTo: window.location.origin // Redirigir automáticamente
+        data: { name: name },
+        emailRedirectTo: window.location.origin
       }
     });
-    
-    if (error) throw error;
-    
-    // Insertar usuario directamente en la tabla 'users'
-    const { error: dbError } = await supabase
-      .from('users')
-      .insert({
-        id: data.user.id,
-        email: email,
-        name: name
-      });
 
-    if (dbError) throw dbError;
-    
+    if (error) {
+      console.error("Error de Supabase:", error);
+      throw error;
+    }
+
+    // Verifica si el usuario se creó correctamente
+    if (!data.user) {
+      throw new Error("No se recibió datos del usuario");
+    }
+
     alert('✅ Registro exitoso!');
-    window.location.href = 'index.html'; // Redirigir directamente
+    window.location.href = 'index.html';
     
   } catch (error) {
-    alert(`❌ Error: ${error.message}`);
+    console.error("Error completo:", error);
+    alert(`❌ Error: ${error.message || "Falló el registro. Intenta nuevamente."}`);
   }
 }
 
@@ -72,7 +68,17 @@ async function logoutUser() {
 async function checkLoggedInUser() {
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
-    return user || null;
+    
+    if (!user) return null;
+
+    // Obtener nombre desde la tabla 'users'
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', user.id)
+      .single();
+
+    return { ...user, name: userData?.name || user.email }; // Usar email si no hay nombre
   } catch (error) {
     console.error("Error verificando usuario:", error);
     return null;
@@ -129,52 +135,126 @@ async function getUserProjects() {
 }
 
 // Mostrar proyectos en la interfaz
-async function displayProjects(showActions = false) {
+async function displayProjects(isPrivateLibrary = false) {
   try {
-    const projects = await getUserProjects();
+    let query = supabase.from('projects').select('*');
+    const user = await checkLoggedInUser();
+    const isAdmin = user?.email === 'oscar.samuel.cardenas@gmail.com';
+
+    // En library.html, todos (incluido admin) ven solo sus proyectos
+    if (isPrivateLibrary) {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      query = query.eq('user_id', user.id); // Filtro aplicado siempre
+    }
+
+    const { data: projects, error } = await query;
+
+    if (error) throw error;
+
     const resultsSection = document.getElementById("results");
-    
+    const noProjectsMessage = document.getElementById("no-projects-message");
+
     if (!resultsSection) return;
 
-    resultsSection.innerHTML = projects.map(project => `
-      <article class="result-item">
-        ${showActions ? `
-          <div class="project-actions">
-            <button onclick="redirectToEdit('${project.id}')" class="btn-edit">✏️ Editar</button>
-            <button onclick="deleteProject('${project.id}')" class="btn-delete">🗑️ Eliminar</button>
-          </div>
-        ` : ''}
-        <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
-        <p class="author">Autores: ${project.authors}</p>
-        <p class="abstract">${project.abstract}</p>
-        <p class="source">Publicación: ${project.publication_date}</p>
-      </article>
-    `).join("");
-
-    // Mostrar mensaje si no hay proyectos
-    const noProjectsMessage = document.getElementById("no-projects-message");
-    if (noProjectsMessage) {
-      noProjectsMessage.style.display = projects.length === 0 ? "block" : "none";
+    if (projects.length === 0) {
+      // ... (código existente)
+      return;
     }
+
+    resultsSection.innerHTML = projects.map(project => {
+      const isOwner = user?.id === project.user_id;
+
+      return `
+        <article class="result-item">
+          ${isPrivateLibrary ? `
+            <div class="project-actions">
+              ${isOwner ? `<button onclick="redirectToEdit('${project.id}')" class="btn-edit">✏️ Editar</button>` : ''}
+              <button onclick="deleteProject('${project.id}')" 
+                class="btn-delete ${isAdmin ? 'admin-delete' : ''}">
+                🗑️ ${isAdmin ? 'Eliminar (Admin)' : 'Eliminar'}
+              </button>
+            </div>
+          ` : ''}
+          ${!isPrivateLibrary && isAdmin ? `
+            <div class="project-actions">
+              <button onclick="deleteProject('${project.id}')" class="btn-delete admin-delete">
+                🗑️ Eliminar (Admin)
+              </button>
+            </div>
+          ` : ''}
+          <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
+          <p class="author">Autores: ${project.authors}</p>
+          <p class="abstract">${project.abstract}</p>
+          <p class="source">Publicación: ${project.publication_date}</p>
+        </article>
+      `;
+    }).join("");
+
   } catch (error) {
-    console.error(error);
+    console.error("Error cargando proyectos:", error);
+    alert("⚠️ No se pudieron cargar los proyectos");
   }
 }
 
 // Eliminar proyecto
 async function deleteProject(projectId) {
   try {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', projectId);
+    const user = await checkLoggedInUser();
+    if (!user) {
+      alert('🔒 Debes iniciar sesión');
+      return;
+    }
 
-    if (error) throw error;
-    await displayProjects(true);
-    alert('✅ Proyecto eliminado correctamente');
+    // Obtener información del proyecto para el mensaje
+    const { data: project } = await supabase
+      .from('projects')
+      .select('title, user_id')
+      .eq('id', projectId)
+      .single();
+
+    const isAdmin = user.email === 'oscar.samuel.cardenas@gmail.com';
+    const isOwner = user.id === project?.user_id;
+
+    let mensaje = '';
+    if (isAdmin && !isOwner) {
+      mensaje = `⚠️ Estás eliminando un proyecto de otro usuario:\n"${project?.title}"\n¿Continuar?`;
+    } else {
+      mensaje = `¿Estás seguro de eliminar el proyecto:\n"${project?.title}"?`;
+    }
+
+    if (!confirm(mensaje)) {
+      return; // El usuario canceló
+    }
+
+    if (isAdmin || isOwner) {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (error) throw error;
+      
+      const isLibrary = window.location.pathname.endsWith('library.html');
+      await displayProjects(isLibrary);
+      alert('✅ Proyecto eliminado' + (isAdmin ? ' (Admin)' : ''));
+    }
+
   } catch (error) {
     alert(`❌ Error: ${error.message}`);
   }
+}
+
+async function isProjectOwner(projectId, userId) {
+  const { data } = await supabase
+    .from('projects')
+    .select('user_id')
+    .eq('id', projectId)
+    .single();
+
+  return data?.user_id === userId;
 }
 
 // Actualizar proyecto

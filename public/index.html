@@ -49,25 +49,25 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // Actualizar estado de autenticación
             const updateAuthUI = async () => {
-                const container = document.getElementById('login-button-container');
-                const user = await checkLoggedInUser();
-                
-                if (user) {
-                    container.innerHTML = `
-                        <div class="user-info">
-                            <i class="fas fa-user-circle"></i>
-                            <span class="user-name">${user.email}</span>
-                            <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
-                }
-            };
+  const container = document.getElementById('login-button-container');
+  const user = await checkLoggedInUser();
+  
+  if (user) {
+    container.innerHTML = `
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span class="user-name">${user.name}</span> <!-- Mostrar nombre aquí -->
+        <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+      </div>
+    `;
+  } else {
+    container.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
+  }
+};
 
             // Cargar proyectos y UI inicial
             await updateAuthUI();
-            await displayProjects(false);
+            await displayProjects();
 
             // Configurar evento de búsqueda
             document.getElementById("search-form").addEventListener("submit", async (e) => {

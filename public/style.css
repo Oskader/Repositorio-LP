@@ -367,3 +367,9 @@ footer {
     position: relative;
     padding-top: 50px;
 }
+
+.admin-delete {
+    background-color: #dc3545 !important;
+    border: 2px solid #ff0000 !important;
+    font-weight: bold;
+  }
