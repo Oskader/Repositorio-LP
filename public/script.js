@@ -138,16 +138,15 @@ async function getUserProjects() {
 async function displayProjects(isPrivateLibrary = false) {
   try {
     let query = supabase.from('projects').select('*');
-    const user = await checkLoggedInUser();
+    const user = await checkLoggedInUser(); // Obtener usuario una vez
     const isAdmin = user?.email === 'oscar.samuel.cardenas@gmail.com';
 
-    // En library.html, todos (incluido admin) ven solo sus proyectos
     if (isPrivateLibrary) {
       if (!user) {
         window.location.href = 'login.html';
         return;
       }
-      query = query.eq('user_id', user.id); // Filtro aplicado siempre
+      query = query.eq('user_id', user.id);
     }
 
     const { data: projects, error } = await query;
@@ -160,34 +159,36 @@ async function displayProjects(isPrivateLibrary = false) {
     if (!resultsSection) return;
 
     if (projects.length === 0) {
-      // ... (código existente)
+      // ... (mantener lógica de proyectos vacíos)
       return;
     }
 
     resultsSection.innerHTML = projects.map(project => {
       const isOwner = user?.id === project.user_id;
-
+      
       return `
         <article class="result-item">
-          ${isPrivateLibrary ? `
+          ${(isPrivateLibrary || isAdmin) ? `
             <div class="project-actions">
-              ${isOwner ? `<button onclick="redirectToEdit('${project.id}')" class="btn-edit">✏️ Editar</button>` : ''}
+              ${isPrivateLibrary && isOwner ? `
+                <button onclick="redirectToEdit('${project.id}')" class="btn-edit">✏️ Editar</button>
+              ` : ''}
               <button onclick="deleteProject('${project.id}')" 
                 class="btn-delete ${isAdmin ? 'admin-delete' : ''}">
                 🗑️ ${isAdmin ? 'Eliminar (Admin)' : 'Eliminar'}
               </button>
             </div>
           ` : ''}
-          ${!isPrivateLibrary && isAdmin ? `
-            <div class="project-actions">
-              <button onclick="deleteProject('${project.id}')" class="btn-delete admin-delete">
-                🗑️ Eliminar (Admin)
-              </button>
-            </div>
-          ` : ''}
           <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
           <p class="author">Autores: ${project.authors}</p>
-          <p class="abstract">${project.abstract}</p>
+          <div class="abstract-container">
+            <button class="btn-abstract" onclick="toggleAbstract('${project.id}')">
+              🔍 Ver resumen
+            </button>
+            <div id="abstract-${project.id}" class="abstract-content hidden">
+              ${project.abstract}
+            </div>
+          </div>
           <p class="source">Publicación: ${project.publication_date}</p>
         </article>
       `;
@@ -355,16 +356,18 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', async () => {
   const user = await checkLoggedInUser();
   
-  if (window.location.pathname.endsWith("library.html")) {
-    if (!user) {
-      alert("🔒 Debes iniciar sesión.");
-      window.location.href = "login.html";
-      return;
-    }
-    await displayProjects(true);
-  }
-  
   if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
     await displayProjects(false);
   }
 });
+
+// Añade estas funciones en script.js
+function toggleAbstract(projectId) {
+  const abstractContent = document.getElementById(`abstract-${projectId}`);
+  const button = abstractContent.previousElementSibling;
+  
+  abstractContent.classList.toggle('hidden');
+  button.innerHTML = abstractContent.classList.contains('hidden') 
+    ? '🔍 Ver resumen' 
+    : '📖 Ocultar resumen';
+}

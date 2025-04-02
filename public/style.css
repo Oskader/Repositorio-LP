@@ -373,3 +373,39 @@ footer {
     border: 2px solid #ff0000 !important;
     font-weight: bold;
   }
+
+  /* Añade estos estilos en style.css */
+.abstract-container {
+    margin: 15px 0;
+  }
+  
+  .btn-abstract {
+    background: none;
+    border: none;
+    color: #1a0dab;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 0.95em;
+    transition: all 0.3s;
+  }
+  
+  .btn-abstract:hover {
+    text-decoration: underline;
+  }
+  
+  .abstract-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    color: #545454;
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+  
+  .abstract-content.hidden {
+    max-height: 0 !important;
+  }
+  
+  .abstract-content:not(.hidden) {
+    max-height: 1000px; /* Ajusta según necesidad */
+  }
