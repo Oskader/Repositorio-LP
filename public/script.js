@@ -138,9 +138,10 @@ async function getUserProjects() {
 async function displayProjects(isPrivateLibrary = false) {
   try {
     let query = supabase.from('projects').select('*');
-    const user = await checkLoggedInUser(); // Obtener usuario una vez
+    const user = await checkLoggedInUser();
     const isAdmin = user?.email === 'oscar.samuel.cardenas@gmail.com';
 
+    // Configurar query para biblioteca privada
     if (isPrivateLibrary) {
       if (!user) {
         window.location.href = 'login.html';
@@ -151,18 +152,36 @@ async function displayProjects(isPrivateLibrary = false) {
 
     const { data: projects, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error de Supabase:", error);
+      throw error;
+    }
 
     const resultsSection = document.getElementById("results");
     const noProjectsMessage = document.getElementById("no-projects-message");
 
-    if (!resultsSection) return;
-
-    if (projects.length === 0) {
-      // ... (mantener lógica de proyectos vacíos)
+    // Validar elementos del DOM
+    if (!resultsSection) {
+      console.error("No se encontró #results en el DOM");
       return;
     }
 
+    // Limpiar resultados
+    resultsSection.innerHTML = "";
+
+    // Manejar estado vacío solo para biblioteca
+    if (isPrivateLibrary && noProjectsMessage) {
+      noProjectsMessage.style.display = projects.length === 0 ? "block" : "none";
+    }
+
+    if (projects.length === 0) {
+      if (isPrivateLibrary && noProjectsMessage) {
+        noProjectsMessage.style.display = "block";
+      }
+      return;
+    }
+
+    // Renderizar proyectos
     resultsSection.innerHTML = projects.map(project => {
       const isOwner = user?.id === project.user_id;
       
