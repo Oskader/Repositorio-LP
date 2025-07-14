@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilo adicional para separar los botones */
+        .header-left {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <!-- Botón Volver -->
+                <a href="index.html" class="btn-library">Volver</a>
+                
+                <!-- Botón Mi Biblioteca -->
+                <a href="library.html" class="btn-library">Mi biblioteca</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Logo Repositorio LP" class="logo">
+                <h1>Repositorio LP</h1>
+            </div>
+            <div class="login-button" id="login-button-container">
+                <!-- Contenido dinámico -->
+            </div>
+        </header>
+
+        <main>
+            <!-- Barra de búsqueda -->
+            <form id="search-form" class="search-form">
+                <input type="text" id="search-input" placeholder="Buscar artículos, libros, tesis..." class="search-input">
+                <button type="submit" class="search-button">Buscar</button>
+            </form>
+
+            <!-- Sección de resultados -->
+            <section class="results" id="results">
+                <!-- Proyectos se cargarán aquí -->
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Repositorio LP</p>
+        </footer>
+    </div>
+
+    <!-- Scripts en orden correcto -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+    
+    <!-- Script de manejo de UI -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Actualizar estado de autenticación
+            const updateAuthUI = async () => {
+                const container = document.getElementById('login-button-container');
+                const user = await checkLoggedInUser();
+                
+                if (user) {
+                    container.innerHTML = `
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="user-name">${user.name}</span>
+                            <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
+                }
+            };
+
+            // Cargar proyectos y UI inicial
+            await updateAuthUI();
+            await displayProjects();
+
+            // Configurar evento de búsqueda
+            document.getElementById("search-form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const query = document.getElementById("search-input").value.toLowerCase();
+                
+                try {
+                    const { data, error } = await supabase
+                        .from('projects')
+                        .select('*')
+                        .or(`title.ilike.%${query}%,authors.ilike.%${query}%,abstract.ilike.%${query}%`);
+
+                    if (error) throw error;
+                    
+                    const resultsSection = document.getElementById("results");
+                    resultsSection.innerHTML = data.map(project => `
+                        <article class="result-item">
+                            <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
+                            <p class="author">Autores: ${project.authors}</p>
+                            <div class="abstract-container">
+                                <button class="btn-abstract" onclick="toggleAbstract('${project.id}')">
+                                    🔍 Ver resumen
+                                </button>
+                                <div id="abstract-${project.id}" class="abstract-content hidden">
+                                    ${project.abstract}
+                                </div>
+                            </div>
+                            <p class="source">Publicación: ${project.publication_date}</p>
+                        </article>
+                    `).join("");
+                } catch (error) {
+                    console.error("Error en búsqueda:", error);
+                }
+            });
+        });
+
+        // Manejar recargas de autenticación
+        window.addEventListener('supabase.auth.stateChange', async () => {
+            await updateAuthUI();
+            await displayProjects(false);
+        });
+    </script>
+</body>
+</html>

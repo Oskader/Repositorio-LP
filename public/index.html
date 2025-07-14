@@ -6,12 +6,69 @@
     <title>Repositorio LP</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Nuevos estilos para la selección de sección */
+        .selection-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+        
+        .selection-header {
+            font-size: 2.5em;
+            color: #1a0dab;
+            margin-bottom: 40px;
+        }
+        
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .selection-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 25px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .selection-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .selection-card i {
+            font-size: 4em;
+            color: #1a0dab;
+            margin-bottom: 20px;
+        }
+        
+        .selection-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #1a0dab;
+        }
+        
+        .selection-card p {
+            font-size: 1.1em;
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-left">
-                <a href="library.html" class="btn-library">Mi biblioteca</a>
+                <!-- Espacio para botón de volver (no necesario en página principal) -->
             </div>
             <div class="header-content">
                 <img src="images/logo.png" alt="Logo Repositorio LP" class="logo">
@@ -23,15 +80,21 @@
         </header>
 
         <main>
-            <!-- Barra de búsqueda -->
-            <form id="search-form" class="search-form">
-                <input type="text" id="search-input" placeholder="Buscar artículos, libros, tesis..." class="search-input">
-                <button type="submit" class="search-button">Buscar</button>
-            </form>
-
-            <!-- Sección de resultados -->
-            <section class="results" id="results">
-                <!-- Proyectos se cargarán aquí -->
+            <!-- Sección de selección -->
+            <section class="selection-section">
+                <h2 class="selection-header">Selecciona una sección</h2>
+                <div class="selection-grid">
+                    <a href="projects.html" class="selection-card">
+                        <i class="fas fa-flask"></i>
+                        <h3>Proyectos Investigativos</h3>
+                        <p>Explora proyectos de investigación realizados por estudiantes y docentes</p>
+                    </a>
+                    <a href="areas.html" class="selection-card">
+                        <i class="fas fa-book-open"></i>
+                        <h3>Áreas Académicas</h3>
+                        <p>Accede a recursos organizados por áreas del conocimiento</p>
+                    </a>
+                </div>
             </section>
         </main>
 
@@ -40,7 +103,7 @@
         </footer>
     </div>
 
-    <!-- Scripts en orden correcto -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     
@@ -49,58 +112,23 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // Actualizar estado de autenticación
             const updateAuthUI = async () => {
-  const container = document.getElementById('login-button-container');
-  const user = await checkLoggedInUser();
-  
-  if (user) {
-    container.innerHTML = `
-      <div class="user-info">
-        <i class="fas fa-user-circle"></i>
-        <span class="user-name">${user.name}</span> <!-- Mostrar nombre aquí -->
-        <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
-      </div>
-    `;
-  } else {
-    container.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
-  }
-};
-
-            // Cargar proyectos y UI inicial
-            await updateAuthUI();
-            await displayProjects();
-
-            // Configurar evento de búsqueda
-            document.getElementById("search-form").addEventListener("submit", async (e) => {
-                e.preventDefault();
-                const query = document.getElementById("search-input").value.toLowerCase();
+                const container = document.getElementById('login-button-container');
+                const user = await checkLoggedInUser();
                 
-                try {
-                    const { data, error } = await supabase
-                        .from('projects')
-                        .select('*')
-                        .or(`title.ilike.%${query}%,authors.ilike.%${query}%,abstract.ilike.%${query}%`);
-
-                    if (error) throw error;
-                    
-                    const resultsSection = document.getElementById("results");
-                    resultsSection.innerHTML = data.map(project => `
-                        <article class="result-item">
-                            <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
-                            <p class="author">Autores: ${project.authors}</p>
-                            <p class="abstract">${project.abstract}</p>
-                            <p class="source">Publicación: ${project.publication_date}</p>
-                        </article>
-                    `).join("");
-                } catch (error) {
-                    console.error("Error en búsqueda:", error);
+                if (user) {
+                    container.innerHTML = `
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="user-name">${user.name}</span>
+                            <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
                 }
-            });
-        });
+            };
 
-        // Manejar recargas de autenticación
-        window.addEventListener('supabase.auth.stateChange', async () => {
             await updateAuthUI();
-            await displayProjects(false);
         });
     </script>
 </body>

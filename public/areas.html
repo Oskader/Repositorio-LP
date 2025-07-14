@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Áreas Académicas - Repositorio LP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos específicos para la página de áreas académicas */
+        .areas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .area-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 25px 15px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #1a0dab;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .area-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+        
+        .area-card i {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .area-card span {
+            font-size: 1.2em;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .upload-container {
+            text-align: center;
+            margin: 30px 0;
+            display: none;
+        }
+        
+        .upload-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+        
+        .result-item h3 {
+            margin-top: 0;
+            color: #1a0dab;
+        }
+        
+        .no-results {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="index.html" class="btn-library">Volver</a>
+            </div>
+            <div class="header-content">
+                <img src="images/logo.png" alt="Logo" class="logo">
+                <h1>Áreas Académicas</h1>
+            </div>
+            <div class="login-button" id="login-button-container">
+                <!-- Contenido dinámico -->
+            </div>
+        </header>
+
+        <main>
+            <!-- Barra de búsqueda -->
+            <form id="search-form" class="search-form">
+                <input type="text" id="search-input" placeholder="Buscar archivos por área..." class="search-input">
+                <button type="submit" class="search-button">Buscar</button>
+            </form>
+
+            <!-- Botón para subir archivo (solo visible para admin) -->
+            <div id="upload-button-container" class="upload-container">
+                <a href="#" id="upload-area-file" class="btn-submit">Subir Archivo</a>
+            </div>
+
+            <!-- Grid de áreas académicas -->
+            <div class="areas-grid">
+                <div class="area-card" data-area="ciencias-naturales">
+                    <i class="fas fa-leaf"></i>
+                    <span>Ciencias Naturales</span>
+                </div>
+                <div class="area-card" data-area="ciencias-sociales">
+                    <i class="fas fa-globe-americas"></i>
+                    <span>Ciencias Sociales</span>
+                </div>
+                <div class="area-card" data-area="educacion-artistica">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>Educación Artística</span>
+                </div>
+                <div class="area-card" data-area="educacion-religiosa">
+                    <i class="fas fa-church"></i>
+                    <span>Educación Religiosa</span>
+                </div>
+                <div class="area-card" data-area="etica-valores">
+                    <i class="fas fa-hands-helping"></i>
+                    <span>Ética y Valores</span>
+                </div>
+                <div class="area-card" data-area="educacion-fisica">
+                    <i class="fas fa-running"></i>
+                    <span>Educación Física</span>
+                </div>
+                <div class="area-card" data-area="humanidades">
+                    <i class="fas fa-book"></i>
+                    <span>Humanidades</span>
+                </div>
+                <div class="area-card" data-area="matematicas">
+                    <i class="fas fa-calculator"></i>
+                    <span>Matemáticas</span>
+                </div>
+                <div class="area-card" data-area="talleres-profundizacion">
+                    <i class="fas fa-tools"></i>
+                    <span>Talleres de Profundización</span>
+                </div>
+                <div class="area-card" data-area="tecnologia-informatica">
+                    <i class="fas fa-laptop"></i>
+                    <span>Tecnología e Informática</span>
+                </div>
+            </div>
+
+            <!-- Formulario para subir archivos (solo visible para admin) -->
+            <div id="upload-form-container" class="upload-container">
+                <div class="upload-form">
+                    <h2>Subir Archivo</h2>
+                    <form id="area-file-form">
+                        <div class="form-group">
+                            <label for="file-title">Título del archivo:</label>
+                            <input type="text" id="file-title" placeholder="Nombre del documento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="file-area">Área académica:</label>
+                            <select id="file-area" required>
+                                <option value="">Seleccionar área...</option>
+                                <option value="ciencias-naturales">Ciencias Naturales</option>
+                                <option value="ciencias-sociales">Ciencias Sociales</option>
+                                <option value="educacion-artistica">Educación Artística</option>
+                                <option value="educacion-religiosa">Educación Religiosa</option>
+                                <option value="etica-valores">Ética y Valores</option>
+                                <option value="educacion-fisica">Educación Física</option>
+                                <option value="humanidades">Humanidades</option>
+                                <option value="matematicas">Matemáticas</option>
+                                <option value="talleres-profundizacion">Talleres de Profundización</option>
+                                <option value="tecnologia-informatica">Tecnología e Informática</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="file-description">Descripción:</label>
+                            <textarea id="file-description" placeholder="Descripción del contenido..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="file-upload">Seleccionar archivo:</label>
+                            <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Subir Archivo</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sección de resultados -->
+            <section class="results" id="results">
+                <!-- Los archivos se mostrarán aquí -->
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Repositorio LP - Áreas Académicas</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://wmrjlpzwmhlphzdpplcl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcmpscHp3bWhscGh6ZHBwbGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyMTYxNTcsImV4cCI6MjA1ODc5MjE1N30.s51lyIpWv8NIMfNiJfYwYbb-rJnG17_BbVYHxD5YxOo';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Elementos DOM
+        const resultsSection = document.getElementById("results");
+        const uploadButtonContainer = document.getElementById("upload-button-container");
+        const uploadFormContainer = document.getElementById("upload-form-container");
+
+        // Función para verificar el rol del usuario
+        async function checkUserRole() {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (!user) return null;
+                
+                // Verificar si es administrador (correo específico)
+                if (user.email === 'oscar.samuel.cardenas@gmail.com') {
+                    return 'admin';
+                }
+                
+                return 'user';
+            } catch (error) {
+                console.error("Error verificando rol:", error);
+                return null;
+            }
+        }
+
+        // Función para mostrar archivos de un área
+        async function showAreaFiles(area) {
+            resultsSection.innerHTML = "<p class='no-results'>Cargando archivos...</p>";
+            
+            try {
+                const { data, error } = await supabase
+                    .from('area_files')
+                    .select('*')
+                    .eq('area', area)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (data.length === 0) {
+                    resultsSection.innerHTML = `<p class="no-results">No hay archivos disponibles para esta área.</p>`;
+                    return;
+                }
+                
+                // Título del área
+                const areaName = document.querySelector(`.area-card[data-area="${area}"] span`).textContent;
+                resultsSection.innerHTML = `<h2 style="margin-bottom: 20px;">Archivos de ${areaName}</h2>`;
+                
+                // Mostrar archivos
+                data.forEach(file => {
+                    const fileElement = document.createElement("article");
+                    fileElement.className = "result-item";
+                    fileElement.innerHTML = `
+                        <h3>${file.title}</h3>
+                        <p class="author">${file.author || 'Autor desconocido'} - ${new Date(file.created_at).toLocaleDateString()}</p>
+                        <p>${file.description || 'Sin descripción'}</p>
+                        <div style="margin-top: 15px;">
+                            <a href="${file.file_url}" target="_blank" class="btn-submit" style="padding: 8px 15px; font-size: 0.9em;">
+                                <i class="fas fa-download"></i> Descargar
+                            </a>
+                        </div>
+                    `;
+                    resultsSection.appendChild(fileElement);
+                });
+            } catch (error) {
+                console.error("Error cargando archivos:", error);
+                resultsSection.innerHTML = `<p class="no-results">Error al cargar los archivos.</p>`;
+            }
+        }
+
+        // Función para buscar archivos
+        async function searchFiles(query) {
+            resultsSection.innerHTML = "<p class='no-results'>Buscando archivos...</p>";
+            
+            if (!query) {
+                resultsSection.innerHTML = `<p class="no-results">Ingrese un término de búsqueda.</p>`;
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('area_files')
+                    .select('*')
+                    .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    resultsSection.innerHTML = `<p class="no-results">No se encontraron archivos para "${query}".</p>`;
+                    return;
+                }
+                
+                // Mostrar resultados
+                resultsSection.innerHTML = `<h2 style="margin-bottom: 20px;">Resultados de búsqueda para "${query}"</h2>`;
+                
+                data.forEach(file => {
+                    const areaName = document.querySelector(`.area-card[data-area="${file.area}"] span`)?.textContent || file.area;
+                    
+                    const fileElement = document.createElement("article");
+                    fileElement.className = "result-item";
+                    fileElement.innerHTML = `
+                        <h3>${file.title}</h3>
+                        <p class="author">${file.author || 'Autor desconocido'} - ${new Date(file.created_at).toLocaleDateString()}</p>
+                        <p><strong>Área:</strong> ${areaName}</p>
+                        <p>${file.description || 'Sin descripción'}</p>
+                        <div style="margin-top: 15px;">
+                            <a href="${file.file_url}" target="_blank" class="btn-submit" style="padding: 8px 15px; font-size: 0.9em;">
+                                <i class="fas fa-download"></i> Descargar
+                            </a>
+                        </div>
+                    `;
+                    resultsSection.appendChild(fileElement);
+                });
+            } catch (error) {
+                console.error("Error en búsqueda:", error);
+                resultsSection.innerHTML = `<p class="no-results">Error al realizar la búsqueda.</p>`;
+            }
+        }
+
+        // Función para subir un archivo
+        async function uploadAreaFile(fileData) {
+            try {
+                // 1. Subir el archivo al storage de Supabase
+                const file = fileData.file;
+                const fileName = `${Date.now()}_${file.name}`;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('area_files')
+                    .upload(fileName, file);
+                
+                if (uploadError) throw uploadError;
+                
+                // Obtener URL pública del archivo
+                const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/area_files/${uploadData.path}`;
+                
+                // 2. Guardar metadatos en la base de datos
+                const { data: dbData, error: dbError } = await supabase
+                    .from('area_files')
+                    .insert({
+                        title: fileData.title,
+                        area: fileData.area,
+                        description: fileData.description,
+                        file_url: fileUrl,
+                        user_id: fileData.userId
+                    });
+                
+                if (dbError) throw dbError;
+                
+                return true;
+            } catch (error) {
+                console.error("Error subiendo archivo:", error);
+                throw error;
+            }
+        }
+
+        // Función para mostrar/ocultar formulario de subida
+        function toggleUploadForm() {
+            if (uploadFormContainer.style.display === "block") {
+                uploadFormContainer.style.display = "none";
+            } else {
+                uploadFormContainer.style.display = "block";
+                resultsSection.innerHTML = "";
+                window.scrollTo(0, uploadFormContainer.offsetTop);
+            }
+        }
+
+        // Función para cerrar sesión
+        async function logoutUser() {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                window.location.href = 'index.html';
+            } catch (error) {
+                alert(`Error cerrando sesión: ${error.message}`);
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticación
+            const { data: { user }, error } = await supabase.auth.getUser();
+            
+            // Actualizar UI de usuario
+            const userContainer = document.getElementById("login-button-container");
+            if (user) {
+                // Obtener nombre del usuario
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('name')
+                    .eq('id', user.id)
+                    .single();
+                    
+                const userName = userData?.name || user.email;
+                
+                userContainer.innerHTML = `
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="user-name">${userName}</span>
+                        <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
+                    </div>
+                `;
+                
+                // Verificar rol (solo admin puede subir archivos)
+                const role = await checkUserRole();
+                if (role === 'admin') {
+                    uploadButtonContainer.style.display = "block";
+                }
+            } else {
+                userContainer.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
+            }
+            
+            // Event listeners para las áreas
+            document.querySelectorAll('.area-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    showAreaFiles(card.getAttribute('data-area'));
+                    uploadFormContainer.style.display = "none";
+                });
+            });
+            
+            // Event listener para búsqueda
+            document.getElementById("search-form").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const query = document.getElementById("search-input").value;
+                if (query.trim()) {
+                    searchFiles(query);
+                    uploadFormContainer.style.display = "none";
+                }
+            });
+            
+            // Event listener para botón de subida
+            document.getElementById("upload-area-file").addEventListener("click", (e) => {
+                e.preventDefault();
+                toggleUploadForm();
+            });
+            
+            // Event listener para formulario de subida
+            document.getElementById("area-file-form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                if (!user) {
+                    alert("Debes iniciar sesión para subir archivos.");
+                    return;
+                }
+                
+                // Obtener datos del formulario
+                const title = document.getElementById("file-title").value;
+                const area = document.getElementById("file-area").value;
+                const description = document.getElementById("file-description").value;
+                const fileInput = document.getElementById("file-upload");
+                
+                if (!fileInput.files.length) {
+                    alert("Por favor, seleccione un archivo.");
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                
+                try {
+                    // Subir archivo
+                    await uploadAreaFile({
+                        title,
+                        area,
+                        description,
+                        file,
+                        userId: user.id
+                    });
+                    
+                    // Limpiar formulario
+                    document.getElementById("area-file-form").reset();
+                    uploadFormContainer.style.display = "none";
+                    
+                    // Mostrar mensaje de éxito
+                    resultsSection.innerHTML = `
+                        <div class="result-item" style="text-align: center; background-color: #e6f7ff;">
+                            <i class="fas fa-check-circle" style="font-size: 3em; color: #28a745;"></i>
+                            <h3>Archivo subido exitosamente</h3>
+                            <p>El archivo "${title}" ha sido subido al área seleccionada.</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    alert(`Error subiendo archivo: ${error.message}`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

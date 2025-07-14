@@ -450,3 +450,91 @@ footer {
     box-shadow: none;
     border-color: transparent;
 }
+
+/* areas.css - Estilos específicos para la sección de áreas académicas */
+
+/* Grid de áreas */
+.areas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.area-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px 15px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: #1a0dab;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.area-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+}
+
+.area-card i {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.area-card span {
+    font-size: 1.2em;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Contenedores para subida de archivos */
+.upload-container {
+    text-align: center;
+    margin: 30px 0;
+    display: none; /* Oculto por defecto */
+}
+
+/* Formulario de subida */
+.upload-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+}
+
+/* Estilos para la información del usuario */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-info i {
+    font-size: 1.5em;
+    color: #1a0dab;
+}
+
+.user-name {
+    font-size: 1.1em;
+    color: #1a0dab;
+    font-weight: 500;
+}
+
+/* Estilos para los resultados de búsqueda */
+.result-item h3 {
+    margin-top: 0;
+    color: #1a0dab;
+}
+
+.no-results {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+}

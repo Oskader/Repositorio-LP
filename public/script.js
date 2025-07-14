@@ -384,7 +384,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <article class="result-item">
             <h2><a href="${project.pdf_url}" target="_blank">${project.title}</a></h2>
             <p class="author">Autores: ${project.authors}</p>
-            <p class="abstract">${project.abstract}</p>
+            <div class="abstract-container">
+                <button class="btn-abstract" onclick="toggleAbstract('${project.id}')">
+                    🔍 Ver resumen
+                </button>
+                <div id="abstract-${project.id}" class="abstract-content hidden">
+                    ${project.abstract}
+                </div>
+            </div>
             <p class="source">Publicación: ${project.publication_date}</p>
           </article>
         `).join("");
