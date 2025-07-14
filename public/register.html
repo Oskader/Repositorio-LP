@@ -31,8 +31,11 @@
                             <input type="text" id="name" name="name" placeholder="Ingresa tu nombre completo" required>
                         </div>
                         <div class="form-group">
-                            <label for="email">Correo electrónico:</label>
-                            <input type="email" id="email" name="email" placeholder="Ingresa tu correo electrónico" required>
+                            <label for="email-user">Correo electrónico institucional:</label>
+                            <div class="email-domain-group">
+                                <input type="text" id="email-user" name="email-user" placeholder="nombre de usuario" required>
+                                <span class="email-domain">@presentacionsogamoso.edu.co</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="password">Contraseña:</label>
@@ -57,21 +60,23 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script>
-        
         document.getElementById("register-form")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const confirmPassword = document.getElementById("confirm-password").value;
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            
+            const emailUser = document.getElementById("email-user").value;
+            const email = emailUser + "@presentacionsogamoso.edu.co";
+            
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
 
-  if (password !== confirmPassword) {
-    alert("❌ Las contraseñas no coinciden");
-    return;
-  }
+            if (password !== confirmPassword) {
+                alert("❌ Las contraseñas no coinciden");
+                return;
+            }
 
-  await registerUser(name, email, password);
-});
+            await registerUser(name, email, password);
+        });
     </script>
 </body>
 </html>

@@ -409,3 +409,44 @@ footer {
   .abstract-content:not(.hidden) {
     max-height: 1000px; /* Ajusta según necesidad */
   }
+
+  /* Estilos para el campo de correo con dominio fijo */
+.email-domain-group {
+    display: flex;
+    align-items: center;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+    background-color: #fff; /* Fondo blanco para el contenedor */
+}
+
+/* Cuando el contenedor está enfocado, actualiza el borde */
+.email-domain-group:focus-within {
+    border-color: #1a0dab;
+    box-shadow: 0 0 5px rgba(26,13,171,0.2);
+}
+
+.email-domain-group input {
+    /* Quitamos el borde del input para que se fusione con el contenedor */
+    border: none;
+    flex-grow: 1; /* Permite que el input ocupe el espacio disponible */
+    outline: none; /* Sin contorno al hacer clic */
+    padding: 12px;
+    font-size: 1em;
+    width: auto;
+    background-color: transparent; /* Fondo transparente */
+}
+
+.email-domain {
+    padding: 12px;
+    color: #6c757d; /* Color de texto gris */
+    background-color: #f0f2f5; /* Fondo ligeramente gris para el dominio */
+    border-left: 2px solid #ddd; /* Línea divisoria */
+    white-space: nowrap; /* Evita que el texto se parta en varias líneas */
+}
+
+/* Anulamos cualquier estilo de focus que el input pudiera tener por defecto */
+.email-domain-group input:focus {
+    box-shadow: none;
+    border-color: transparent;
+}

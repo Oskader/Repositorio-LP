@@ -3,8 +3,13 @@ const SUPABASE_URL = 'https://wmrjlpzwmhlphzdpplcl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcmpscHp3bWhscGh6ZHBwbGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyMTYxNTcsImV4cCI6MjA1ODc5MjE1N30.s51lyIpWv8NIMfNiJfYwYbb-rJnG17_BbVYHxD5YxOo';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Función para registrar usuario
+// script.js (parte modificada)
 async function registerUser(name, email, password) {
+  if (!email.endsWith('@presentacionsogamoso.edu.co')) {
+    alert('❌ Error: Solo se permiten correos institucionales');
+    return;
+  }
+
   try {
     const { data, error } = await supabase.auth.signUp({
       email: email,
@@ -17,12 +22,15 @@ async function registerUser(name, email, password) {
 
     if (error) {
       console.error("Error de Supabase:", error);
+      // Manejo específico de errores de red
+      if (error.message.includes("Failed to fetch")) {
+        throw new Error("Error de conexión. Verifica tu internet");
+      }
       throw error;
     }
 
-    // Verifica si el usuario se creó correctamente
     if (!data.user) {
-      throw new Error("No se recibió datos del usuario");
+      throw new Error("Registro incompleto. Verifica tu correo");
     }
 
     alert('✅ Registro exitoso!');
@@ -30,12 +38,28 @@ async function registerUser(name, email, password) {
     
   } catch (error) {
     console.error("Error completo:", error);
-    alert(`❌ Error: ${error.message || "Falló el registro. Intenta nuevamente."}`);
+    let mensaje = "Error en registro: ";
+    
+    if (error.message.includes("internet")) {
+      mensaje += "Sin conexión a internet";
+    } else if (error.message.includes("already registered")) {
+      mensaje += "Usuario ya registrado";
+    } else {
+      mensaje += error.message || "Intenta nuevamente";
+    }
+    
+    alert(`❌ ${mensaje}`);
   }
 }
 
 // Función para iniciar sesión
 async function loginUser(email, password) {
+    // Validación de dominio de correo
+    if (!email.endsWith('@presentacionsogamoso.edu.co')) {
+        alert('❌ Error: Solo se permiten correos del dominio @presentacionsogamoso.edu.co');
+        return;
+    }
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
