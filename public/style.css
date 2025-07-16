@@ -538,3 +538,51 @@ footer {
     font-style: italic;
     color: #666;
 }
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-info i {
+    font-size: 1.5em;
+    color: #1a0dab;
+}
+
+.user-name {
+    font-size: 1.1em;
+    color: #1a0dab;
+    font-weight: 500;
+}
+
+.btn-logout {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+}
+
+.btn-logout:hover {
+    background-color: #cc0000;
+}
+
+.btn-login {
+    background-color: #1a0dab;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.btn-login:hover {
+    background-color: #0b5ed7;
+}

@@ -71,6 +71,87 @@
             font-style: italic;
             color: #666;
         }
+        
+        /* Botones de administración */
+        .file-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-delete-file {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        
+        .btn-delete-file:hover {
+            background-color: #cc0000;
+        }
+        
+        .btn-edit-file {
+            background-color: #1a0dab;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        
+        .btn-edit-file:hover {
+            background-color: #0b5ed7;
+        }
+        
+        /* Estilo para el modal de edición */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .edit-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .edit-modal-close {
+            float: right;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* Estilo para el botón de subir archivos */
+        #upload-area-file {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #1a0dab;
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        #upload-area-file:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -96,7 +177,7 @@
             </form>
 
             <!-- Botón para subir archivo (solo visible para admin) -->
-            <div id="upload-button-container" class="upload-container">
+            <div id="upload-button-container" class="upload-container" style="display: none;">
                 <a href="#" id="upload-area-file" class="btn-submit">Subir Archivo</a>
             </div>
 
@@ -149,6 +230,7 @@
                 <div class="upload-form">
                     <h2>Subir Archivo</h2>
                     <form id="area-file-form">
+                        <input type="hidden" id="file-id">
                         <div class="form-group">
                             <label for="file-title">Título del archivo:</label>
                             <input type="text" id="file-title" placeholder="Nombre del documento" required>
@@ -177,7 +259,47 @@
                             <label for="file-upload">Seleccionar archivo:</label>
                             <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" required>
                         </div>
-                        <button type="submit" class="btn-submit">Subir Archivo</button>
+                        <button type="submit" class="btn-submit" id="submit-button">Subir Archivo</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para editar archivo -->
+            <div id="edit-modal" class="edit-modal">
+                <div class="edit-modal-content">
+                    <span class="edit-modal-close">&times;</span>
+                    <h2>Editar Archivo</h2>
+                    <form id="edit-file-form">
+                        <input type="hidden" id="edit-file-id">
+                        <div class="form-group">
+                            <label for="edit-file-title">Título del archivo:</label>
+                            <input type="text" id="edit-file-title" placeholder="Nombre del documento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-file-area">Área académica:</label>
+                            <select id="edit-file-area" required>
+                                <option value="">Seleccionar área...</option>
+                                <option value="ciencias-naturales">Ciencias Naturales</option>
+                                <option value="ciencias-sociales">Ciencias Sociales</option>
+                                <option value="educacion-artistica">Educación Artística</option>
+                                <option value="educacion-religiosa">Educación Religiosa</option>
+                                <option value="etica-valores">Ética y Valores</option>
+                                <option value="educacion-fisica">Educación Física</option>
+                                <option value="humanidades">Humanidades</option>
+                                <option value="matematicas">Matemáticas</option>
+                                <option value="talleres-profundizacion">Talleres de Profundización</option>
+                                <option value="tecnologia-informatica">Tecnología e Informática</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-file-description">Descripción:</label>
+                            <textarea id="edit-file-description" placeholder="Descripción del contenido..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-file-upload">Actualizar archivo (opcional):</label>
+                            <input type="file" id="edit-file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx">
+                        </div>
+                        <button type="submit" class="btn-submit">Guardar Cambios</button>
                     </form>
                 </div>
             </div>
@@ -195,16 +317,14 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
     <script>
-        // Configuración de Supabase
-        const SUPABASE_URL = 'https://wmrjlpzwmhlphzdpplcl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcmpscHp3bWhscGh6ZHBwbGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyMTYxNTcsImV4cCI6MjA1ODc5MjE1N30.s51lyIpWv8NIMfNiJfYwYbb-rJnG17_BbVYHxD5YxOo';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
         // Elementos DOM
         const resultsSection = document.getElementById("results");
         const uploadButtonContainer = document.getElementById("upload-button-container");
         const uploadFormContainer = document.getElementById("upload-form-container");
+        const editModal = document.getElementById("edit-modal");
+        const closeModal = document.querySelector(".edit-modal-close");
 
         // Función para verificar el rol del usuario
         async function checkUserRole() {
@@ -214,7 +334,8 @@
                 if (!user) return null;
                 
                 // Verificar si es administrador (correo específico)
-                if (user.email === 'oscar.samuel.cardenas@gmail.com') {
+                if (user.email === 'oscar.samuel.cardenas@gmail.com' || 
+                    user.email === 'oscarcardenas@presentacionsogamoso.edu.co') {
                     return 'admin';
                 }
                 
@@ -231,7 +352,7 @@
             
             try {
                 const { data, error } = await supabase
-                    .from('area_files')
+                    .from('areafiles')
                     .select('*')
                     .eq('area', area)
                     .order('created_at', { ascending: false });
@@ -247,6 +368,10 @@
                 const areaName = document.querySelector(`.area-card[data-area="${area}"] span`).textContent;
                 resultsSection.innerHTML = `<h2 style="margin-bottom: 20px;">Archivos de ${areaName}</h2>`;
                 
+                // Verificar si es admin
+                const role = await checkUserRole();
+                const isAdmin = role === 'admin';
+                
                 // Mostrar archivos
                 data.forEach(file => {
                     const fileElement = document.createElement("article");
@@ -255,10 +380,14 @@
                         <h3>${file.title}</h3>
                         <p class="author">${file.author || 'Autor desconocido'} - ${new Date(file.created_at).toLocaleDateString()}</p>
                         <p>${file.description || 'Sin descripción'}</p>
-                        <div style="margin-top: 15px;">
+                        <div class="file-actions">
                             <a href="${file.file_url}" target="_blank" class="btn-submit" style="padding: 8px 15px; font-size: 0.9em;">
                                 <i class="fas fa-download"></i> Descargar
                             </a>
+                            ${isAdmin ? `
+                                <button onclick="editAreaFile('${file.id}')" class="btn-edit-file">Editar</button>
+                                <button onclick="deleteAreaFile('${file.id}', '${file.file_url}')" class="btn-delete-file">Eliminar</button>
+                            ` : ''}
                         </div>
                     `;
                     resultsSection.appendChild(fileElement);
@@ -280,7 +409,7 @@
             
             try {
                 const { data, error } = await supabase
-                    .from('area_files')
+                    .from('areafiles')
                     .select('*')
                     .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
                     .order('created_at', { ascending: false });
@@ -291,6 +420,10 @@
                     resultsSection.innerHTML = `<p class="no-results">No se encontraron archivos para "${query}".</p>`;
                     return;
                 }
+                
+                // Verificar si es admin
+                const role = await checkUserRole();
+                const isAdmin = role === 'admin';
                 
                 // Mostrar resultados
                 resultsSection.innerHTML = `<h2 style="margin-bottom: 20px;">Resultados de búsqueda para "${query}"</h2>`;
@@ -305,10 +438,14 @@
                         <p class="author">${file.author || 'Autor desconocido'} - ${new Date(file.created_at).toLocaleDateString()}</p>
                         <p><strong>Área:</strong> ${areaName}</p>
                         <p>${file.description || 'Sin descripción'}</p>
-                        <div style="margin-top: 15px;">
+                        <div class="file-actions">
                             <a href="${file.file_url}" target="_blank" class="btn-submit" style="padding: 8px 15px; font-size: 0.9em;">
                                 <i class="fas fa-download"></i> Descargar
                             </a>
+                            ${isAdmin ? `
+                                <button onclick="editAreaFile('${file.id}')" class="btn-edit-file">Editar</button>
+                                <button onclick="deleteAreaFile('${file.id}', '${file.file_url}')" class="btn-delete-file">Eliminar</button>
+                            ` : ''}
                         </div>
                     `;
                     resultsSection.appendChild(fileElement);
@@ -319,6 +456,90 @@
             }
         }
 
+        // Función para eliminar un archivo de área
+        async function deleteAreaFile(fileId, fileUrl) {
+            if (!confirm('¿Estás seguro de eliminar este archivo?')) {
+                return;
+            }
+
+            try {
+                // Obtener el nombre del archivo en el storage
+                const urlParts = fileUrl.split('/');
+                const fileName = urlParts[urlParts.length - 1];
+                
+                // Eliminar el archivo del storage
+                const { error: storageError } = await supabase.storage
+                    .from('areafiles')
+                    .remove([fileName]);
+                
+                if (storageError) throw storageError;
+                
+                // Eliminar el registro de la base de datos
+                const { error: dbError } = await supabase
+                    .from('areafiles')
+                    .delete()
+                    .eq('id', fileId);
+                
+                if (dbError) throw dbError;
+                
+                alert('✅ Archivo eliminado correctamente');
+                
+                // Recargar los archivos actuales
+                const currentArea = document.querySelector('.area-card.active')?.getAttribute('data-area');
+                if (currentArea) {
+                    showAreaFiles(currentArea);
+                } else {
+                    const query = document.getElementById("search-input").value;
+                    if (query) {
+                        searchFiles(query);
+                    }
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Función para editar un archivo de área
+        async function editAreaFile(fileId) {
+            try {
+                const { data: file, error } = await supabase
+                    .from('areafiles')
+                    .select('*')
+                    .eq('id', fileId)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Llenar el formulario de edición
+                document.getElementById('edit-file-id').value = file.id;
+                document.getElementById('edit-file-title').value = file.title;
+                document.getElementById('edit-file-area').value = file.area;
+                document.getElementById('edit-file-description').value = file.description || '';
+                
+                // Mostrar el modal de edición
+                editModal.style.display = 'flex';
+                
+            } catch (error) {
+                alert(`❌ Error al cargar el archivo: ${error.message}`);
+            }
+        }
+
+        // Función para actualizar un archivo
+        async function updateAreaFile(fileId, updatedData) {
+            try {
+                const { error } = await supabase
+                    .from('areafiles')
+                    .update(updatedData)
+                    .eq('id', fileId);
+                
+                if (error) throw error;
+                
+                return true;
+            } catch (error) {
+                throw new Error(`Error actualizando archivo: ${error.message}`);
+            }
+        }
+
         // Función para subir un archivo
         async function uploadAreaFile(fileData) {
             try {
@@ -326,17 +547,17 @@
                 const file = fileData.file;
                 const fileName = `${Date.now()}_${file.name}`;
                 const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('area_files')
+                    .from('areafiles')
                     .upload(fileName, file);
                 
                 if (uploadError) throw uploadError;
                 
                 // Obtener URL pública del archivo
-                const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/area_files/${uploadData.path}`;
+                const fileUrl = `${supabase.supabaseUrl}/storage/v1/object/public/areafiles/${uploadData.path}`;
                 
                 // 2. Guardar metadatos en la base de datos
                 const { data: dbData, error: dbError } = await supabase
-                    .from('area_files')
+                    .from('areafiles')
                     .insert({
                         title: fileData.title,
                         area: fileData.area,
@@ -349,8 +570,7 @@
                 
                 return true;
             } catch (error) {
-                console.error("Error subiendo archivo:", error);
-                throw error;
+                throw new Error(`Error subiendo archivo: ${error.message}`);
             }
         }
 
@@ -358,6 +578,10 @@
         function toggleUploadForm() {
             if (uploadFormContainer.style.display === "block") {
                 uploadFormContainer.style.display = "none";
+                // Limpiar formulario
+                document.getElementById("area-file-form").reset();
+                document.getElementById("file-id").value = "";
+                document.getElementById("submit-button").textContent = "Subir Archivo";
             } else {
                 uploadFormContainer.style.display = "block";
                 resultsSection.innerHTML = "";
@@ -365,56 +589,36 @@
             }
         }
 
-        // Función para cerrar sesión
-        async function logoutUser() {
-            try {
-                const { error } = await supabase.auth.signOut();
-                if (error) throw error;
-                window.location.href = 'index.html';
-            } catch (error) {
-                alert(`Error cerrando sesión: ${error.message}`);
-            }
-        }
-
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
-            // Verificar autenticación
-            const { data: { user }, error } = await supabase.auth.getUser();
+            // Actualizar UI de autenticación
+            await updateAuthUI("login-button-container");
             
-            // Actualizar UI de usuario
-            const userContainer = document.getElementById("login-button-container");
-            if (user) {
-                // Obtener nombre del usuario
-                const { data: userData } = await supabase
-                    .from('users')
-                    .select('name')
-                    .eq('id', user.id)
-                    .single();
-                    
-                const userName = userData?.name || user.email;
-                
-                userContainer.innerHTML = `
-                    <div class="user-info">
-                        <i class="fas fa-user-circle"></i>
-                        <span class="user-name">${userName}</span>
-                        <a href="#" onclick="logoutUser()" class="btn-logout">Cerrar sesión</a>
-                    </div>
-                `;
-                
-                // Verificar rol (solo admin puede subir archivos)
-                const role = await checkUserRole();
-                if (role === 'admin') {
-                    uploadButtonContainer.style.display = "block";
-                }
+            // Verificar autenticación
+            const user = await checkLoggedInUser();
+            
+            // Verificar rol (solo admin puede subir archivos)
+            const role = await checkUserRole();
+            console.log("Rol del usuario:", role);
+            if (role === 'admin') {
+                // Mostrar el botón de subir archivos
+                uploadButtonContainer.style.display = "block";
+                console.log("Mostrando botón de subir archivos para administrador");
             } else {
-                userContainer.innerHTML = '<a href="login.html" class="btn-login">Iniciar sesión</a>';
+                uploadButtonContainer.style.display = "none";
             }
             
             // Event listeners para las áreas
             document.querySelectorAll('.area-card').forEach(card => {
                 card.addEventListener('click', () => {
+                    // Marcar tarjeta como activa
+                    document.querySelectorAll('.area-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    
+                    // Mostrar archivos del área
                     showAreaFiles(card.getAttribute('data-area'));
                     uploadFormContainer.style.display = "none";
+                    editModal.style.display = "none";
                 });
             });
             
@@ -425,6 +629,7 @@
                 if (query.trim()) {
                     searchFiles(query);
                     uploadFormContainer.style.display = "none";
+                    editModal.style.display = "none";
                 }
             });
             
@@ -480,6 +685,81 @@
                     `;
                 } catch (error) {
                     alert(`Error subiendo archivo: ${error.message}`);
+                }
+            });
+            
+            // Event listener para formulario de edición
+            document.getElementById("edit-file-form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                if (!user) {
+                    alert("Debes iniciar sesión para editar archivos.");
+                    return;
+                }
+                
+                // Obtener datos del formulario
+                const fileId = document.getElementById("edit-file-id").value;
+                const title = document.getElementById("edit-file-title").value;
+                const area = document.getElementById("edit-file-area").value;
+                const description = document.getElementById("edit-file-description").value;
+                const fileInput = document.getElementById("edit-file-upload");
+                const file = fileInput.files[0];
+                
+                try {
+                    // Datos a actualizar
+                    const updatedData = {
+                        title,
+                        area,
+                        description
+                    };
+                    
+                    // Si se subió un nuevo archivo
+                    if (file) {
+                        // Subir nuevo archivo
+                        const fileName = `${Date.now()}_${file.name}`;
+                        const { data: uploadData, error: uploadError } = await supabase.storage
+                            .from('areafiles')
+                            .upload(fileName, file);
+                        
+                        if (uploadError) throw uploadError;
+                        
+                        // Obtener URL pública del nuevo archivo
+                        const fileUrl = `${supabase.supabaseUrl}/storage/v1/object/public/areafiles/${uploadData.path}`;
+                        updatedData.file_url = fileUrl;
+                    }
+                    
+                    // Actualizar en la base de datos
+                    await updateAreaFile(fileId, updatedData);
+                    
+                    // Cerrar modal
+                    editModal.style.display = "none";
+                    
+                    // Recargar archivos
+                    const currentArea = document.querySelector('.area-card.active')?.getAttribute('data-area');
+                    if (currentArea) {
+                        showAreaFiles(currentArea);
+                    } else {
+                        const query = document.getElementById("search-input").value;
+                        if (query) {
+                            searchFiles(query);
+                        }
+                    }
+                    
+                    alert('✅ Archivo actualizado correctamente');
+                } catch (error) {
+                    alert(`Error actualizando archivo: ${error.message}`);
+                }
+            });
+            
+            // Cerrar modal al hacer clic en la X
+            closeModal.addEventListener('click', () => {
+                editModal.style.display = "none";
+            });
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', (e) => {
+                if (e.target === editModal) {
+                    editModal.style.display = "none";
                 }
             });
         });
